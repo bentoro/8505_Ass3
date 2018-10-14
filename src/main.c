@@ -2,15 +2,30 @@
 #include <stdlib.h>
 #include <pcap.h>
 #include <errno.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
+#include "./wrappers/encrypt_utils.h"
+
+unsigned char *key = (unsigned char *)"01234567890123456789012345678901"; //Key
+unsigned char *iv = (unsigned char*)"0123456789012345"; //IV
 
 int Packetcapture(char *filter);
 void callback(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 int main(int argc, char **argv){
-    Packetcapture("");
+    //Packetcapture("");
+    unsigned char *plaintext = (unsigned char *)"this is a test";
+    unsigned char decryptedtext[66000];
+    unsigned char ciphertext[66000];
+    int decryptedlen, cipherlen;
+    printf("Plaintext is: %s\n", plaintext);
+    cipherlen = encryptMessage(plaintext, strlen((char*)plaintext), key,iv, ciphertext);
+    printf("Ciphertext: %s\n",ciphertext);
+    decryptedlen = decryptMessage(ciphertext, cipherlen, key, iv, decryptedtext);
+    printf("Decrypted text is: %s \n", decryptedtext);
+
     return 0;
 }
 
