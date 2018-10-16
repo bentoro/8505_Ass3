@@ -9,9 +9,19 @@
 #include <netinet/if_ether.h>
 #include <netinet/ether.h>
 #include "./src/encrypt_utils.h"
+#include "./src/socketwrappers.h"
 #include "main.h"
 
 #define FILTER "tcp and port 8505"
+#define PAYLOAD_KEY "8505"
+#define ADDRESS "192.168.1.13"
+#define PORT "8505"
+#define BUFFERSIZE 1024
+
+struct payload{
+    char key[5]; // always 8505
+    char buffer[1024]; // for either commands or results
+};
 
 unsigned char *key = (unsigned char *)"01234567890123456789012345678901"; //Key
 unsigned char *iv = (unsigned char*)"0123456789012345"; //IV
@@ -22,9 +32,20 @@ void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* pac
 void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParsePayload(const u_char *payload, int len);
+void CreatePayload(char *command, unsigned char *encrypted);
+void SendPayload(const unsigned char *tcp_payload);
 
 int main(int argc, char **argv){
-    Packetcapture();
+    char *c = "c";
+    if(strcmp(argv[1],c) == 0){
+        unsigned char encrypted[sizeof(struct payload)];
+        char hello[BUFFERSIZE] = "hello";
+        CreatePayload(hello, encrypted);
+        SendPayload(encrypted);
+        exit(1);
+    } else {
+        Packetcapture();
+    }
 
     /*unsigned char *plaintext = (unsigned char *)"This is a test";
     unsigned char decryptedtext[128];
@@ -59,7 +80,7 @@ int Packetcapture(){
         exit(0);
     }
 
-    if(pcap_compile(interfaceinfo, &fp, "tcp", 0, netp) == -1){
+    if(pcap_compile(interfaceinfo, &fp, FILTER, 0, netp) == -1){
         perror("pcap_comile");
     }
 
@@ -172,4 +193,35 @@ void ParsePayload(const u_char *payload, int len){
     //decrypt payload
     //parse the first x bytes for the key
     //parse the rest into a struct
+
+    unsigned char decryptedtext[128];
+    int decryptedlen, cipherlen;
+    cipherlen = strlen((char*)payload);
+    decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
+    printf("Decrypted text is: %s \n", decryptedtext);
+}
+
+void CreatePayload(char *command, unsigned char *encrypted){
+    struct payload p;
+    unsigned char tcp_payload[sizeof(p)];
+    unsigned char ciphertext[sizeof(tcp_payload)];
+    int cipherlen;
+
+    strncpy(PAYLOAD_KEY,p.key, sizeof(p.key));
+    strncpy(command, p.buffer, sizeof(p.buffer));
+    memcpy(tcp_payload, &p, sizeof(p));
+    printf("Plaintext is: %s\n", tcp_payload);
+    cipherlen = encryptMessage(tcp_payload, strlen((char*)tcp_payload) + 1, key,iv, ciphertext);
+    printf("Ciphertext is: %s\n", ciphertext);
+    encrypted = ciphertext;
+}
+
+void SendPayload(const unsigned char *tcp_payload){
+    int serversocket, bytesSent;
+    serversocket = makeConnect(ADDRESS, PORT);
+    if((bytesSent = send(serversocket, tcp_payload, sizeof(tcp_payload), 0)) < 0){
+        perror("Send");
+        exit(1);
+    }
+    printf("Bytes Sent: %d \n", bytesSent);
 }
