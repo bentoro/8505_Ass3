@@ -205,13 +205,12 @@ void CreatePayload(char *command, unsigned char *encrypted){
     struct payload p;
     unsigned char tcp_payload[sizeof(p)];
     unsigned char ciphertext[sizeof(tcp_payload)];
-    int cipherlen;
 
-    strncpy(PAYLOAD_KEY,p.key, sizeof(p.key));
-    strncpy(command, p.buffer, sizeof(p.buffer));
+    strncpy(p.key, PAYLOAD_KEY, sizeof(PAYLOAD_KEY));
+    strncpy(p.buffer, command, sizeof((char*) command));
     memcpy(tcp_payload, &p, sizeof(p));
     printf("Plaintext is: %s\n", tcp_payload);
-    cipherlen = encryptMessage(tcp_payload, strlen((char*)tcp_payload) + 1, key,iv, ciphertext);
+    encryptMessage(tcp_payload, strlen((char*)tcp_payload) + 1, key,iv, ciphertext);
     printf("Ciphertext is: %s\n", ciphertext);
     encrypted = ciphertext;
 }
