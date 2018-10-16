@@ -212,8 +212,8 @@ void CreatePayload(char *command, unsigned char *encrypted){
     printf("Plaintext is: %s\n", tcp_payload);
     encryptMessage(tcp_payload, strlen((char*)tcp_payload) + 1, key,iv, ciphertext);
     printf("Ciphertext is: %s\n", ciphertext);
-    strncpy(encrypted, ciphertext, sizeof(ciphertext));
-    printf("Size of Ciphertext is: %d \n", sizeof(ciphertext));
+    strncpy((char *)encrypted, (const char *)ciphertext, sizeof(ciphertext));
+    printf("Size of Ciphertext is: %lu \n", sizeof(ciphertext));
 }
 
 void SendPayload(const unsigned char *tcp_payload){
