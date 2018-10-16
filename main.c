@@ -24,9 +24,9 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 void ParsePayload(const u_char *payload, int len);
 
 int main(int argc, char **argv){
-    //Packetcapture("");
+    Packetcapture();
 
-    unsigned char *plaintext = (unsigned char *)"This is a test";
+    /*unsigned char *plaintext = (unsigned char *)"This is a test";
     unsigned char decryptedtext[128];
     unsigned char ciphertext[128];
     int decryptedlen, cipherlen;
@@ -34,7 +34,7 @@ int main(int argc, char **argv){
     cipherlen = encryptMessage(plaintext, strlen((char*)plaintext) + 1, key,iv, ciphertext);
     printf("Ciphertext: %s\n",ciphertext);
     decryptedlen = decryptMessage(ciphertext, cipherlen, key, iv, decryptedtext);
-    printf("Decrypted text is: %s \n", decryptedtext);
+    printf("Decrypted text is: %s \n", decryptedtext);*/
 
     return 0;
 }
@@ -59,7 +59,7 @@ int Packetcapture(){
         exit(0);
     }
 
-    if(pcap_compile(interfaceinfo, &fp, "tcp and port 8505", 0, netp) == -1){
+    if(pcap_compile(interfaceinfo, &fp, "tcp", 0, netp) == -1){
         perror("pcap_comile");
     }
 
@@ -67,7 +67,7 @@ int Packetcapture(){
         perror("pcap_setfilter");
     }
 
-    pcap_loop(interfaceinfo, -1, Callback, NULL);
+    pcap_loop(interfaceinfo, -1, ReadPacket, NULL);
     return 0;
 }
 
