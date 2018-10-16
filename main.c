@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
 #include <netinet/ether.h>
-#include "./wrappers/encrypt_utils.h"
+#include "./src/encrypt_utils.h"
 #include "main.h"
 
 #define FILTER "tcp and port 8505"
@@ -26,15 +26,15 @@ void ParsePayload(const u_char *payload, int len);
 int main(int argc, char **argv){
     //Packetcapture("");
 
-    /*unsigned char *plaintext = (unsigned char *)"This is a test";
+    unsigned char *plaintext = (unsigned char *)"This is a test";
     unsigned char decryptedtext[128];
     unsigned char ciphertext[128];
     int decryptedlen, cipherlen;
     printf("Plaintext is: %s\n", plaintext);
-    cipherlen = encryptMessage(plaintext, strlen((char*)plaintext), key,iv, ciphertext);
+    cipherlen = encryptMessage(plaintext, strlen((char*)plaintext) + 1, key,iv, ciphertext);
     printf("Ciphertext: %s\n",ciphertext);
     decryptedlen = decryptMessage(ciphertext, cipherlen, key, iv, decryptedtext);
-    printf("Decrypted text is: %s \n", decryptedtext);*/
+    printf("Decrypted text is: %s \n", decryptedtext);
 
     return 0;
 }
