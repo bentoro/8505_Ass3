@@ -194,26 +194,26 @@ void ParsePayload(const u_char *payload, int len){
     //parse the first x bytes for the key
     //parse the rest into a struct
 
-    unsigned char decryptedtext[128];
-    int decryptedlen, cipherlen;
-    cipherlen = strlen((char*)payload);
-    decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
-    printf("Decrypted text is: %s \n", decryptedtext);
+    //unsigned char decryptedtext[128];
+    //int decryptedlen, cipherlen;
+    //cipherlen = strlen((char*)payload);
+    //decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
+    printf("Payload text is: %s \n", payload);
 }
 
 void CreatePayload(char *command, unsigned char *encrypted){
     struct payload p;
     unsigned char tcp_payload[sizeof(p)];
-    unsigned char ciphertext[sizeof(struct payload)];
+    //unsigned char ciphertext[sizeof(struct payload)];
 
     strncpy(p.key, PAYLOAD_KEY, sizeof(PAYLOAD_KEY));
     strncpy(p.buffer, command, sizeof((char*) command));
     memcpy(tcp_payload, &p, sizeof(p));
-    printf("Plaintext is: %s\n", tcp_payload);
-    encryptMessage(tcp_payload, strlen((char*)tcp_payload) + 1, key,iv, ciphertext);
-    printf("Ciphertext is: %s\n", ciphertext);
-    strncpy((char *)encrypted, (const char *)ciphertext, sizeof(ciphertext));
-    printf("Size of Ciphertext is: %lu \n", sizeof(ciphertext));
+    //printf("Plaintext is: %s\n", tcp_payload);
+    //encryptMessage(tcp_payload, strlen((char*)tcp_payload) + 1, key,iv, ciphertext);
+    //printf("Ciphertext is: %s\n", ciphertext);
+    strncpy((char *)encrypted, (const char *)tcp_payload, sizeof(tcp_payload));
+    printf("Size of tcp_payload: %lu \n", sizeof(tcp_payload));
 }
 
 void SendPayload(const unsigned char *tcp_payload){
