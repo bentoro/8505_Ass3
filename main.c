@@ -146,6 +146,8 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         exit(1);
     } else if(ip->ip_p == IPPROTO_TCP){
         printf("Protocal: TCP\n");
+        printf("IPID: %hu\n", ip->ip_id);
+        printf("TOS: %u\n", ip->ip_tos);
         ParseTCP(args, pkthdr, packet);
     } else if((off & 0x1fff) == 0){
         printf("IP: %s\n", inet_ntoa(ip->ip_src));
@@ -178,7 +180,6 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 
     printf("Source port: %d\n", ntohs(tcp->th_sport));
     printf("Destination port: %d\n", ntohs(tcp->th_dport));
-
     payload = (u_char *)(packet + 14 + size_ip + size_tcp);
 
     size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
