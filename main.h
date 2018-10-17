@@ -9,14 +9,19 @@
 #include <netinet/if_ether.h>
 #include <net/ethernet.h>
 #include <netinet/ether.h>
-#include <netinet/ip.h>
+//#include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include "./src/encrypt_utils.h"
+#include "./src/socketwrappers.h"
+#include "./src/covert_wrappers.h"
 
 struct my_ip {
 	u_int8_t	ip_vhl;		/* header length, version */

