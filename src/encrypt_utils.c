@@ -76,7 +76,7 @@ int decryptMessage(unsigned char *ciphertext, int ciphertextlen, unsigned char *
     if(!(ctx = EVP_CIPHER_CTX_new())){
         handleErrors();
     }
-
+    printf("Message:\n");
     for(unsigned long i=0; i<(ciphertextlen); ++i){
         printf("%02x", ciphertext[i]);
     }
