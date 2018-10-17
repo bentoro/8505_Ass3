@@ -184,7 +184,7 @@ void ParsePayload(const u_char *payload, int len){
     }
     cipherlen = strlen((char*)payload);
     printf("Encrypted Payload is: %s \n", payload);
-    decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
+    decryptedlen = decryptMessage((unsigned char*)payload, BUFSIZE, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
 
     printf("Encrypted payload size: %d\n", decryptedlen);
     printf("Encrypted Payload is: %s \n", decryptedtext);
