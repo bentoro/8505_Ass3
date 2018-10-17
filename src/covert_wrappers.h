@@ -28,6 +28,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <unistd.h>
+#include "encrypt_utils.h"
 
 #define _BSD_SOURCE
 #define BUFSIZE 1024
@@ -35,7 +36,7 @@
 struct send_tcp {
     struct iphdr ip;
     struct tcphdr tcp;
-    char buffer[BUFSIZE];
+    unsigned char buffer[BUFSIZE];
 } send_tcp;
 
 struct recv_tcp {
@@ -53,7 +54,7 @@ struct pseudo_header {
     struct tcphdr tcp;
 } pseudo_header;
 
-void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data);
+void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data);
 char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, int tos);
 int generate_rand();
 unsigned int host_convert(char* ip);

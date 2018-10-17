@@ -12,8 +12,6 @@ struct payload{
     char buffer[1024]; // for either commands or results
 };
 
-unsigned char *key = (unsigned char *)"01234567890123456789012345678901"; //Key
-unsigned char *iv = (unsigned char*)"0123456789012345"; //IV
 
 int Packetcapture();
 void Callback(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
@@ -30,7 +28,7 @@ int main(int argc, char **argv){
     char *dip = "192.168.1.13";
     unsigned short sport = 22;
     unsigned short dport = 8505;
-    char *data = "hello";
+    unsigned char data[BUFSIZE] = "hello";
 
 
     if(strcmp(argv[1],c) == 0){
@@ -210,29 +208,4 @@ void ParsePayload(const u_char *payload, int len){
     //cipherlen = strlen((char*)payload);
     //decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
     printf("Payload text is: %s \n", payload);
-}
-
-void CreatePayload(char *command, unsigned char *encrypted){
-    struct payload p;
-    unsigned char tcp_payload[sizeof(p)];
-    //unsigned char ciphertext[sizeof(struct payload)];
-
-    strncpy(p.key, PAYLOAD_KEY, sizeof(PAYLOAD_KEY));
-    strncpy(p.buffer, command, sizeof((char*) command));
-    memcpy(tcp_payload, &p, sizeof(p));
-    //printf("Plaintext is: %s\n", tcp_payload);
-    //encryptMessage(tcp_payload, strlen((char*)tcp_payload) + 1, key,iv, ciphertext);
-    //printf("Ciphertext is: %s\n", ciphertext);
-    strncpy((char *)encrypted, (const char *)tcp_payload, sizeof(tcp_payload));
-    printf("Size of tcp_payload: %lu \n", sizeof(tcp_payload));
-}
-
-void SendPayload(const unsigned char *tcp_payload){
-    int serversocket, bytesSent;
-    serversocket = makeConnect(ADDRESS, PORT);
-    if((bytesSent = send(serversocket, tcp_payload, sizeof(tcp_payload), 0)) < 0){
-        perror("Send");
-        exit(1);
-    }
-    printf("Bytes Sent: %d \n", bytesSent);
 }

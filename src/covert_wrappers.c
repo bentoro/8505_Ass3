@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include "covert_wrappers.h"
 
-void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data) {
+void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data) {
     int bytes_sent;
     int sending_socket;
     struct sockaddr_in sin;
@@ -76,7 +76,9 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     packet.tcp.check = 0;
     packet.tcp.urg_ptr = 0;
 
-    strncpy(packet.buffer, data, BUFSIZE);
+    encryptMessage(data, strlen((char*)data) + 1, (unsigned char*) KEY, (unsigned char*) IV, packet.buffer);
+    printf("Ciphertext: %s\n", packet.buffer);
+
 
     //creat socket struct
     sin.sin_family = AF_INET;

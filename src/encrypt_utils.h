@@ -26,6 +26,10 @@
 #define BUFFLEN 16
 
 
+#define KEY "01234567890123456789012345678901"
+#define IV "0123456789012345"
+
+
 void encryptString(unsigned char* key, unsigned char *iv, char *payload, bool encrypt);
 int encryptMessage(unsigned char *plaintext, int plaintextlen, unsigned char *key, unsigned char *iv, unsigned char *ciphertext);
 int decryptMessage(unsigned char *ciphertext, int ciphertextlen, unsigned char *key, unsigned char *iv, unsigned char *plaintext);
