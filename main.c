@@ -149,6 +149,7 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
         if(CheckKey(ip->ip_tos, ip->ip_id)){
+            printf("Reading payload\n");
             ParseTCP(args, pkthdr, packet);
         } else {
             printf("Packet tossed wrong key\n");
@@ -161,7 +162,7 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
 }
 
 bool CheckKey(u_char ip_tos, u_short ip_id){
-    if(ip_tos == 'b' && ip_id == 'l'){
+    if(ip_tos == 'l' && ip_id == 'b'){
         return true;
     } else {
         return false;
