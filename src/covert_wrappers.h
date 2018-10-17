@@ -38,7 +38,7 @@
 struct send_tcp {
     struct iphdr ip;
     struct tcphdr tcp;
-    unsigned char buffer[BUFSIZE];
+    unsigned char buffer[BUFSIZE + 16];     //payload size plus 16 bytes for encryption
 } send_tcp;
 
 struct recv_tcp {
