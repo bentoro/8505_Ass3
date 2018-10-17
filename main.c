@@ -14,7 +14,6 @@ struct payload{
 
 
 int Packetcapture();
-void Callback(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
@@ -87,19 +86,6 @@ int Packetcapture(){
     return 0;
 }
 
-void Callback(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet){
-    int i = 0;
-    static int count = 0;
-
-    printf("Packet Count: %d\n", ++count);
-    printf("Received Packet Size: %d\n", pkthdr->len);
-    printf("Payload:\n");
-    for(i=0; i < (pkthdr->len); i++){
-            printf("%C \n", packet[i]);
-    }
-}
-
-
 void ReadPacket(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
     //grab the type of packet
     struct ether_header *ethernet;
@@ -149,9 +135,6 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         } else {
             printf("Packet tossed wrong key\n");
         }
-    } else if((off & 0x1fff) == 0){
-        printf("IP: %s\n", inet_ntoa(ip->ip_src));
-        printf("%s %d %d %d %d\n", inet_ntoa(ip->ip_dst), hlen, version, len, off);
     }
 
 }
@@ -203,9 +186,10 @@ void ParsePayload(const u_char *payload, int len){
     //parse the first x bytes for the key
     //parse the rest into a struct
 
-    //unsigned char decryptedtext[128];
-    //int decryptedlen, cipherlen;
-    //cipherlen = strlen((char*)payload);
-    //decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
-    printf("Payload text is: %s \n", payload);
+    unsigned char decryptedtext[BUFSIZE];
+    int decryptedlen, cipherlen;
+    cipherlen = strlen((char*)payload);
+    printf("Encrypted Payload is: %s \n", payload);
+    decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, key, iv, decryptedtext);
+    printf("Encrypted Payload is: %s \n", decryptedtext);
 }
