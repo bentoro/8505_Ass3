@@ -16,7 +16,6 @@ unsigned char *key = (unsigned char *)"01234567890123456789012345678901"; //Key
 unsigned char *iv = (unsigned char*)"0123456789012345"; //IV
 
 int Packetcapture();
-void Callback(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
@@ -88,19 +87,6 @@ int Packetcapture(){
     pcap_loop(interfaceinfo, -1, ReadPacket, NULL);
     return 0;
 }
-
-void Callback(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet){
-    int i = 0;
-    static int count = 0;
-
-    printf("Packet Count: %d\n", ++count);
-    printf("Received Packet Size: %d\n", pkthdr->len);
-    printf("Payload:\n");
-    for(i=0; i < (pkthdr->len); i++){
-            printf("%C \n", packet[i]);
-    }
-}
-
 
 void ReadPacket(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
     //grab the type of packet
