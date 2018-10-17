@@ -76,9 +76,10 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     packet.tcp.check = 0;
     packet.tcp.urg_ptr = 0;
 
-    encryptMessage(data, strlen((char*)data) + 1, (unsigned char*) KEY, (unsigned char*) IV, packet.buffer);
+    memset(packet.buffer, 0, sizeof(packet.buffer));
+    printf("sizeof message to send: %lu\n", sizeof(data));
+    encryptMessage(data, sizeof(data) + 1, (unsigned char*) KEY, (unsigned char*) IV, packet.buffer);
     printf("Ciphertext: %s\n", packet.buffer);
-
 
     //creat socket struct
     sin.sin_family = AF_INET;
@@ -114,6 +115,7 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
         perror("sendto");
     }
     printf("Sending Data(%d)\n", bytes_sent);
+    printf("Size of payload(%lu)\n", sizeof(packet.buffer));
 }
 
 char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, int tos) {
