@@ -18,6 +18,7 @@
 #include <signal.h>
 #include <limits.h>
 
+
 void setNonBlocking(int fd);
 void sigHandler(int s);
 struct addrinfo setHints(int family, int socktype, int flags);
@@ -31,4 +32,6 @@ int recvBytes(int fd, char *buff);
 int readBytes(int fd, char *buff);
 void spliceTo(int source, int destination, int pipefd[2]);
 void NewConnection(int socket, int epollfd);
+void spliceTo(int source, int destination, int pipefd[2]);
+
 #endif

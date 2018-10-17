@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,6 +16,8 @@
 #include <signal.h>
 #include <limits.h>
 #include "socketwrappers.h"
+#include <fcntl.h>
+
 
 #define MAXCONNECTION 62
 
@@ -178,3 +182,37 @@ int sendBytes(int fd, char *buff){
     return bytesrecv;
 }
 
+void spliceTo(int source, int destination, int pipefd[2]){
+    int getBytes;
+    int writeBytes;
+
+    while(1) {
+        //move bytes from source fd to pipe
+        if((getBytes = splice(source, 0, pipefd[1], 0, USHRT_MAX, SPLICE_F_MOVE | SPLICE_F_MORE)) == -1 && errno != EAGAIN) {
+            perror("getting splice error");
+        }
+        if(errno==EAGAIN){
+            continue;
+        }
+        if((getBytes <= 0) && errno != EAGAIN ) {
+            return;
+        }
+
+        printf("bytes read: %d\n", getBytes);
+
+        //write bytes from pipe to destination fd
+        do{
+            writeBytes = splice(pipefd[0], 0, destination, 0, getBytes, SPLICE_F_MOVE | SPLICE_F_MORE);
+
+            if(writeBytes <= 0) {
+                if(writeBytes == -1 && errno != EAGAIN) {
+                    perror("writing splice error");
+                }
+                break;
+            }
+
+            printf("wrote: %d\n", writeBytes);
+            getBytes -= writeBytes;
+        } while(getBytes);
+    }
+}

