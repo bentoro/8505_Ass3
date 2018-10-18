@@ -172,7 +172,7 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 
 void ParsePayload(const u_char *payload, int len){
     FILE *fp;
-    unsigned char decryptedtext[sizeof(BUFSIZE + 16)];
+    unsigned char decryptedtext[BUFSIZE + 16];
     int decryptedlen, cipherlen;
     char *args[1];
 
