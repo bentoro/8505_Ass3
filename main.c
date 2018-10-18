@@ -28,10 +28,10 @@ int main(int argc, char **argv){
     setgid(0);
     char *c = "c";
     char *sip = "142.232/153.106";
-    char *dip = "142.232.156.43";
+    char *dip = "192.168.1.13";
     unsigned short sport = 22;
     unsigned short dport = 8505;
-    unsigned char data[BUFSIZE] = "hello";
+    unsigned char data[BUFSIZE] = "hello, blooo25. You look korean when your eyes are closed :D. You look beautiful in this light ;)";
 
     if(strcmp(argv[1],c) == 0){
         covert_send(sip, dip, dport, sport, data);
