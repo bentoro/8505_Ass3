@@ -3,3 +3,4 @@ main: main.c ./src/encrypt_utils.c ./src/socketwrappers.c ./src/covert_wrappers.
 
 clean:
 	rm -f *.o sniffer
+	rm -f ressults cmd.sh
