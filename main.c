@@ -172,7 +172,7 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 
 void ParsePayload(const u_char *payload, int len){
     FILE *fp;
-    unsigned char decryptedtext[BUFSIZE + 16];
+    unsigned char decryptedtext[BUFSIZE+16];
     int decryptedlen, cipherlen;
     char *args[1];
 
@@ -182,12 +182,13 @@ void ParsePayload(const u_char *payload, int len){
         perror("fopen");
         exit(1);
     }
+    printf("Encrypted Payload size is: %lu\n", sizeof(payload));
     cipherlen = strlen((char*)payload);
     printf("Encrypted Payload is: %s \n", payload);
-    decryptedlen = decryptMessage((unsigned char*)payload, BUFSIZE, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
+    decryptedlen = decryptMessage((unsigned char*)payload, BUFSIZE+16, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
 
-    printf("Encrypted payload size: %d\n", decryptedlen);
-    printf("Encrypted Payload is: %s \n", decryptedtext);
+    printf("Decrypted payload size: %d\n", decryptedlen);
+    printf("Decrypted Payload is: %s \n", decryptedtext);
     if((fwrite(decryptedtext, sizeof(decryptedtext), sizeof(char), fp)) <= 0){
         perror("fwrite");
         exit(1);
