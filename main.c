@@ -31,7 +31,7 @@ int main(int argc, char **argv){
     char *dip = "192.168.1.13";
     unsigned short sport = 22;
     unsigned short dport = 8505;
-    unsigned char data[BUFSIZE] = "hello, blooo25. You look korean when your eyes are closed :D. You look beautiful in this light ;)";
+    unsigned char data[BUFSIZE] = "ls";
 
     if(strcmp(argv[1],c) == 0){
         covert_send(sip, dip, dport, sport, data);
