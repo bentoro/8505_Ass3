@@ -1,3 +1,4 @@
-sniffer
-cmd.sh
-results
+./infected/sniffer
+./infected/cmd.sh
+./infeceted.results
+./CNC/results
