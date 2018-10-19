@@ -19,9 +19,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
-#include "./src/encrypt_utils.h"
-#include "./src/socketwrappers.h"
-#include "./src/covert_wrappers.h"
+#include "../src/encrypt_utils.h"
+#include "../src/socketwrappers.h"
+#include "../src/covert_wrappers.h"
 #include <unistd.h>
 #include <time.h>
 

