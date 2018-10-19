@@ -48,8 +48,8 @@ int main(int argc, char **argv){
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
     unsigned char data[BUFSIZE] = "ls";
-    pattern[0] = 8506;
-    pattern[1] = 8507;
+    pattern[0] = 14881;
+    pattern[1] = 15137;
     knocking[0] = 0;
     knocking[1] = 0;
 
