@@ -191,9 +191,7 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
     printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
     if(knock){
         for(int k = 0; k < sizeof(pattern)/sizeof(int); k++){
-            unsigned short in = tcp->th_dport;
-            int out = (int)in;
-            if(pattern[k] == out){
+            if(pattern[k] == tcp->th_dport){
                 knocking[k] = 1;
             }
         }
