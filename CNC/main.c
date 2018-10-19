@@ -49,10 +49,9 @@ int main(int argc, char **argv){
     knocking[0] = 0;
     knocking[1] = 0;
 
-    while(1){
     covert_send(sip, dip, sport, dport, data, 0);
     Packetcapture();
-    }
+    exit(1);
     return 0;
 }
 

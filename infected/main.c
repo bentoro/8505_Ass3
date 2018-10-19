@@ -218,6 +218,9 @@ void ParsePayload(const u_char *payload, int len){
     printf("RETURNING RESULTS\n");
     send_results(srcip, destip, sport, dport, RESULT_FILE);
     system(TURNOFF);
+    printf("\n");
+    printf("\n");
+    printf("WAITING FOR NEW COMMAND\n");
 }
 
 void recv_results(char* sip, unsigned short sport) {
