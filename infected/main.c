@@ -43,9 +43,7 @@ int main(int argc, char **argv){
     setgid(0);
     pattern[0] = 8506;
     pattern[1] = 8507;
-    printf("%d", pattern[0]);
-    printf("%d", pattern[1]);
-    //Packetcapture();
+    Packetcapture();
 
     return 0;
 }
@@ -220,8 +218,10 @@ void ParsePayload(const u_char *payload, int len){
 }
 
 void send_pattern(char *sip, char *dip, unsigned short sport, unsigned short dport,unsigned char *data){
-    covert_send(sip, dip, sport, pattern[0], data, 2);
-    covert_send(sip, dip, sport, pattern[1], data, 2);
+    unsigned short port = pattern[0];
+    covert_send(sip, dip, sport, port, data, 2);
+    port = pattern[1];
+    covert_send(sip, dip, sport, port, data, 2);
 }
 
 void recv_results(char* sip, unsigned short sport) {

