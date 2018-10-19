@@ -56,7 +56,7 @@ int main(int argc, char **argv){
 
     if(strcmp(argv[1],c) == 0){
         covert_send(sip, dip, sport, dport, data, 0);
-
+        Packetcapture();
         exit(1);
     } else {
         Packetcapture();
