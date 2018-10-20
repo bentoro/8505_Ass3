@@ -101,4 +101,5 @@ bool CheckKey(u_char ip_tos, u_short ip_id, bool type);
 
 int knocking[2];
 int pattern[2];
+pcap_t *interfaceinfo;
 #endif

