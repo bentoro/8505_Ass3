@@ -31,7 +31,7 @@ void recv_results(char* sip, unsigned short sport, char* filename) {
 
     while(1) {
         input = covert_recv(sip, sport, 1, 0, 0, 0);
-        if(input != 0) {
+        if(input > 0) {
             printf("Output(%d): %c\n", input, input);
             fprintf(file, "%c", input);
             fflush(file);
