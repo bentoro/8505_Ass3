@@ -56,6 +56,10 @@ struct pseudo_header {
     struct tcphdr tcp;
 } pseudo_header;
 
+
+void recv_results(char* sip, unsigned short sport, char* filename);
+void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename);
+int rand_delay(int delay);
 void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel);
 char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, int tos);
 int generate_rand();

